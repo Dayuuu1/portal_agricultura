@@ -6,7 +6,9 @@ use App\Enums\DocumentSection;
 use App\Models\Agency;
 use App\Models\DocumentType;
 use App\Models\OrganizationalUnit;
+use App\Models\Page;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 /**
  * Menu entries built from the organizational structure, so the public menu
@@ -14,7 +16,18 @@ use Illuminate\Support\Facades\Cache;
  */
 final class SiteNavigation
 {
-    public const CACHE_KEY = 'portal.navigation';
+    /**
+     * Versioned so a change in the shape of the menu rebuilds it without clearing the cache by hand (v2 adds pages).
+     */
+    public const CACHE_KEY = 'portal.navigation.v2';
+
+    /**
+     * Icons for the pages the portal ships with; other pages get a generic document icon.
+     */
+    private const PAGE_ICONS = [
+        'codigo-de-etica' => 'heroicon-o-shield-check',
+        'politica-de-privacidad' => 'heroicon-o-lock-closed',
+    ];
 
     /**
      * @return array{
@@ -60,6 +73,14 @@ final class SiteNavigation
                 ->all(),
             'agrarianTypes' => DocumentType::query()->where('section', DocumentSection::InformacionAgraria)->orderBy('sort_order')->get()
                 ->map(fn (DocumentType $type): array => ['name' => $type->name, 'url' => route('documents.index', ['tipo' => $type->slug], false)])
+                ->all(),
+            'pages' => Page::query()->inMenu()->orderBy('id')->get()
+                ->map(fn (Page $page): array => [
+                    'name' => $page->title,
+                    'url' => route('pages.show', $page, false),
+                    'hint' => Str::limit((string) $page->excerpt, 48),
+                    'icon' => self::PAGE_ICONS[$page->slug] ?? 'heroicon-o-document-text',
+                ])
                 ->all(),
         ];
     }

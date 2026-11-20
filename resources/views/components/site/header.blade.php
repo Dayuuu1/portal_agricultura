@@ -4,7 +4,8 @@
         ['label' => 'Organigrama', 'url' => route('institutional.organization-chart'), 'hint' => 'Estructura orgánica', 'icon' => 'heroicon-o-squares-2x2'],
         ['label' => 'Directorio', 'url' => route('institutional.directory'), 'hint' => 'Autoridades y responsables', 'icon' => 'heroicon-o-identification'],
         ['label' => 'Agencias agrarias', 'url' => route('agencies.index'), 'hint' => 'Atención en provincias', 'icon' => 'heroicon-o-map-pin'],
-        ['label' => 'Código de ética', 'url' => route('pages.show', 'codigo-de-etica'), 'hint' => 'Principios de la función pública', 'icon' => 'heroicon-o-shield-check'],
+        // Pages marked «Mostrar en el menú Institucional» in the panel (the code of ethics, for instance).
+        ...array_map(fn (array $page): array => ['label' => $page['name'], 'url' => url($page['url']), 'hint' => $page['hint'], 'icon' => $page['icon']], $menu['pages'] ?? []),
     ];
 
     $agrarianLinks = [
@@ -14,7 +15,7 @@
 
     $navigation = [
         ['key' => 'inicio', 'label' => 'Inicio', 'url' => route('home'), 'active' => ['home']],
-        ['key' => 'institucional', 'label' => 'Institucional', 'active' => ['institutional.*', 'agencies.*'], 'mega' => true],
+        ['key' => 'institucional', 'label' => 'Institucional', 'active' => ['institutional.*', 'agencies.*', 'pages.show'], 'mega' => true],
         ['key' => 'informacion', 'label' => 'Información agraria', 'url' => route('agrarian-information'), 'active' => ['agrarian-information'], 'children' => $agrarianLinks],
         ['key' => 'noticias', 'label' => 'Noticias', 'url' => route('posts.index'), 'active' => ['posts.*']],
         ['key' => 'documentos', 'label' => 'Documentos', 'url' => route('documents.index'), 'active' => ['documents.*'], 'children' => [

@@ -21,7 +21,7 @@ class PageSeeder extends Seeder
         foreach ($pages as [$slug, $title, $excerpt, $body]) {
             Page::query()->updateOrCreate(
                 ['slug' => $slug],
-                ['title' => $title, 'excerpt' => $excerpt, 'body' => $body, 'is_published' => true],
+                ['title' => $title, 'excerpt' => $excerpt, 'body' => $body, 'is_published' => true, 'show_in_menu' => $slug === 'codigo-de-etica'],
             );
         }
     }

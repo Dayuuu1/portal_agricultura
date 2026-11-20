@@ -7,6 +7,7 @@ use App\Models\Agency;
 use App\Models\DocumentType;
 use App\Models\Link;
 use App\Models\OrganizationalUnit;
+use App\Models\Page;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\SiteNavigation;
@@ -43,7 +44,7 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('components.site.header', fn (ViewInstance $view) => $view->with('menu', SiteNavigation::data()));
 
-        foreach ([OrganizationalUnit::class, Agency::class, DocumentType::class] as $model) {
+        foreach ([OrganizationalUnit::class, Agency::class, DocumentType::class, Page::class] as $model) {
             $model::saved(fn () => SiteNavigation::flush());
             $model::deleted(fn () => SiteNavigation::flush());
         }
