@@ -14,7 +14,7 @@ class CreateDocument extends CreateRecord
 
     public function getSubheading(): string
     {
-        return 'Suba el archivo (PDF, Word o Excel, máximo 20 MB) y elija el tipo de documento: el tipo define en qué sección del portal aparecerá.';
+        return 'Suba el archivo, elija el tipo de documento y revise el título. A la derecha verá dónde aparecerá en el portal antes de guardar.';
     }
 
     /**

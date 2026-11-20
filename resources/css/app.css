@@ -4,9 +4,15 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/*
+ * El portal público no tiene tema oscuro: «dark:» solo responde a una clase .dark explícita,
+ * así las vistas de terceros (paginación de Laravel) no se oscurecen cuando el sistema está en modo oscuro.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
-    --font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Public Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --font-display: 'Bricolage Grotesque', 'Public Sans', ui-sans-serif, system-ui, sans-serif;
 
     --color-brand-50: #effaf2;
     --color-brand-100: #d8f3df;
@@ -17,7 +23,7 @@
     --color-brand-600: #1c7c45;
     --color-brand-700: #17633a;
     --color-brand-800: #154f31;
-    --color-brand-900: #12412a;
+    --color-brand-900: #0e3b25;
     --color-brand-950: #082417;
 
     --color-gold-50: #fdf8eb;
@@ -27,20 +33,33 @@
     --color-gold-500: #d9961f;
     --color-gold-600: #bd7418;
 
+    --color-paper: #f6f7f3;
+    --color-ink: #16261d;
     --color-gob: #c8102e;
+
+    --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+    --shadow-lift: 0 18px 40px -18px rgb(14 59 37 / 0.35);
 }
 
 @layer base {
     html {
         scroll-behavior: smooth;
+        scroll-padding-top: 4.5rem;
+        accent-color: var(--color-brand-600);
     }
 
     body {
-        @apply bg-stone-50 font-sans text-slate-800 antialiased;
+        @apply bg-paper font-sans text-slate-700 antialiased;
+        font-feature-settings: 'ss01', 'cv11';
     }
 
     h1, h2, h3, h4 {
-        @apply font-display;
+        @apply font-display tracking-tight;
+        text-wrap: balance;
+    }
+
+    ::selection {
+        @apply bg-gold-300 text-brand-950;
     }
 
     :focus-visible {
@@ -123,33 +142,14 @@
         outline: 3px solid #ffe14d;
         color: #ffe14d !important;
     }
-}
 
-/* Acercamiento lento de la foto de fondo del banner (se desactiva con «Detener animaciones»). */
-.hero-background {
-    animation: hero-background-zoom 9s ease-out both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .hero-background {
-        animation: none;
-    }
-}
-
-@keyframes hero-background-zoom {
-    from {
-        transform: scale(1.08);
-    }
-}
-
-@keyframes link-carousel-scroll {
-    to {
-        transform: translateX(-50%);
+    html.a11y-contrast .contours {
+        display: none;
     }
 }
 
 @utility btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-200 ease-out select-none focus-visible:outline-2 focus-visible:outline-offset-2 active:translate-y-0 active:scale-[0.98];
 }
 
 @layer components {
@@ -158,31 +158,95 @@
     }
 
     .btn-primary {
-        @apply btn bg-brand-600 text-white shadow-sm hover:bg-brand-700;
+        @apply btn bg-brand-600 text-white shadow-sm shadow-brand-900/20 hover:-translate-y-px hover:bg-brand-700;
     }
 
     .btn-secondary {
-        @apply btn bg-white text-brand-800 ring-1 ring-brand-200 ring-inset hover:bg-brand-50;
+        @apply btn bg-white text-brand-800 ring-1 ring-brand-200 ring-inset hover:-translate-y-px hover:bg-brand-50 hover:ring-brand-300;
     }
 
     .btn-gold {
-        @apply btn bg-gold-400 text-brand-950 shadow-sm hover:bg-gold-300;
+        @apply btn bg-gold-400 text-brand-950 shadow-sm shadow-gold-600/30 hover:-translate-y-px hover:bg-gold-300;
     }
 
+    .btn-ghost-light {
+        @apply btn bg-white/10 text-white ring-1 ring-white/25 backdrop-blur-sm ring-inset hover:-translate-y-px hover:bg-white/20;
+    }
+
+    /* Una sola superficie para todo el portal: blanca, borde fino, sombra apenas perceptible. */
     .card {
-        @apply rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/70;
+        @apply rounded-2xl bg-white shadow-[0_1px_2px_rgb(14_59_37/0.05)] ring-1 ring-slate-900/[0.07];
+    }
+
+    /* Tarjeta enlazada: se eleva 2 px y gana sombra al pasar el puntero. */
+    .card-link {
+        @apply transition duration-300 ease-(--ease-out-quint) hover:-translate-y-0.5 hover:shadow-lift hover:ring-brand-300/70;
     }
 
     .form-input {
-        @apply block w-full rounded-lg border-0 bg-white px-3.5 py-2.5 text-slate-900 shadow-sm ring-1 ring-slate-300 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-brand-600 focus:ring-inset sm:text-sm;
+        @apply block min-h-11 w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-slate-900 shadow-sm ring-1 ring-slate-300 transition ring-inset placeholder:text-slate-400 hover:ring-slate-400 focus:ring-2 focus:ring-brand-600 focus:ring-inset sm:text-sm;
     }
 
     .form-label {
-        @apply mb-1.5 block text-sm font-medium text-slate-700;
+        @apply mb-1.5 block text-sm font-semibold text-slate-700;
+    }
+
+    /* Rótulo corto sobre los títulos de sección: frase normal, con una marca dorada. */
+    .eyebrow {
+        @apply mb-2 inline-flex items-center gap-2.5 text-sm font-semibold text-brand-700;
+    }
+
+    .eyebrow::before {
+        content: '';
+        @apply h-0.5 w-6 rounded-full bg-gold-400;
+    }
+
+    /* Subrayado que se dibuja al pasar el puntero. */
+    .link-draw {
+        background-image: linear-gradient(currentColor, currentColor);
+        background-position: 0 100%;
+        background-repeat: no-repeat;
+        background-size: 0 1px;
+        transition: background-size 0.35s var(--ease-out-quint);
+    }
+
+    .link-draw:hover,
+    .group:hover .link-draw,
+    .link-draw:focus-visible {
+        background-size: 100% 1px;
+    }
+
+    /*
+     * Marco para fotos: si la imagen no carga (archivo pendiente o enlace roto) queda un fondo
+     * institucional con un brote, en lugar del ícono de imagen rota.
+     */
+    .media {
+        @apply relative isolate overflow-hidden bg-brand-800;
+        background-image:
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='.35' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21v-8'/%3E%3Cpath d='M12 13c0-4 3-7 8-7 0 4-3 7-8 7Z'/%3E%3Cpath d='M12 15c0-3.3-2.5-6-7-6 0 3.3 2.5 6 7 6Z'/%3E%3C/svg%3E"),
+            radial-gradient(circle at 70% 20%, var(--color-brand-600), var(--color-brand-900) 70%);
+        background-position: center, center;
+        background-repeat: no-repeat;
+        background-size: clamp(2.5rem, 18%, 4.5rem), cover;
+    }
+
+    .media > img {
+        @apply size-full object-cover transition-[transform,opacity] duration-700 ease-(--ease-out-quint);
+    }
+
+    .group:hover .media > img {
+        transform: scale(1.03);
+    }
+
+    .media > img.is-broken,
+    img.is-broken {
+        opacity: 0;
     }
 
     /* Carrusel de enlaces de interés (components/link-carousel.blade.php). */
     .link-carousel-viewport {
+        /* «relative»: los textos sr-only (posición absoluta) también quedan recortados y no ensanchan la página. */
+        position: relative;
         overflow: hidden;
         mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
     }
@@ -193,6 +257,19 @@
 
     .link-carousel-track.is-paused {
         animation-play-state: paused;
+    }
+
+    .link-carousel :is(.link-logo-fallback) {
+        display: none;
+    }
+
+    .link-carousel :has(> img.is-broken) .link-logo-fallback,
+    .link-carousel a:has(img.is-broken) .link-logo-fallback {
+        display: block;
+    }
+
+    .link-carousel a:has(img.is-broken) img {
+        display: none;
     }
 
     /* Without motion the logos become a row the visitor scrolls by hand. */
@@ -228,4 +305,167 @@
         background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.12) 1px, transparent 0);
         background-size: 22px 22px;
     }
+
+    /* Curvas de nivel (components/site/contours.blade.php). */
+    .contours {
+        pointer-events: none;
+    }
+
+    .contours path {
+        vector-effect: non-scaling-stroke;
+        stroke-dasharray: 1 1;
+        stroke-dashoffset: 0;
+    }
+
+    /* Barra de progreso de lectura en las noticias: sigue el desplazamiento sin JavaScript. */
+    .reading-progress {
+        display: none;
+    }
+
+    @supports (animation-timeline: scroll()) {
+        .reading-progress {
+            display: block;
+            transform-origin: 0 50%;
+            animation: reading-progress linear both;
+            animation-timeline: scroll(root);
+        }
+    }
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * Movimiento. Todo queda quieto con «prefers-reduced-motion» o con «Detener animaciones»
+ * (html.a11y-no-motion); nada depende del movimiento para mostrarse.
+ * ------------------------------------------------------------------------------------------- */
+
+@keyframes link-carousel-scroll {
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes hero-background-zoom {
+    from {
+        transform: scale(1.08);
+    }
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(0.75rem);
+    }
+}
+
+@keyframes word-up {
+    from {
+        transform: translateY(110%);
+    }
+}
+
+@keyframes draw {
+    from {
+        stroke-dashoffset: 1;
+    }
+}
+
+@keyframes reading-progress {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+}
+
+@keyframes status-ping {
+    75%,
+    100% {
+        transform: scale(2.4);
+        opacity: 0;
+    }
+}
+
+/* Cada palabra del título del banner es una ventana que deja ver la palabra subiendo. */
+.hero-word {
+    display: inline-block;
+    overflow: hidden;
+    padding-bottom: 0.1em;
+    margin-bottom: -0.1em;
+    vertical-align: bottom;
+}
+
+.hero-word > span {
+    display: inline-block;
+}
+
+.status-dot {
+    @apply relative inline-flex size-2 rounded-full bg-current;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition {
+        navigation: auto;
+    }
+
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation-duration: 0.28s;
+    }
+
+    /* Acercamiento lento de la foto de fondo del banner. */
+    .hero-background {
+        animation: hero-background-zoom 9s ease-out both;
+    }
+
+    .is-active .hero-word > span {
+        animation: word-up 0.9s var(--ease-out-quint) both;
+        animation-delay: calc(var(--w, 0) * 45ms + 120ms);
+    }
+
+    .is-active .enter,
+    .enter-now {
+        animation: rise 0.9s var(--ease-out-quint) both;
+        animation-delay: var(--d, 0ms);
+    }
+
+    .contours-animate path {
+        animation: draw 2.6s var(--ease-out-quint) both;
+        animation-delay: calc(var(--i, 0) * 60ms + 200ms);
+    }
+
+    .status-dot.is-live::after {
+        content: '';
+        @apply absolute inset-0 rounded-full bg-current;
+        animation: status-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    /* Revelado al desplazarse (solo en la portada). html.js-motion lo pone el script del <head>. */
+    html.js-motion [data-reveal] {
+        opacity: 0;
+        transform: translateY(1.5rem);
+        transition:
+            opacity 0.8s var(--ease-out-quint),
+            transform 0.8s var(--ease-out-quint);
+        transition-delay: var(--d, 0ms);
+    }
+
+    html.js-motion [data-reveal].is-visible {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+html.a11y-no-motion::view-transition-old(root),
+html.a11y-no-motion::view-transition-new(root) {
+    animation: none !important;
+}
+
+html.a11y-no-motion [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+html.a11y-no-motion .status-dot::after {
+    display: none;
 }

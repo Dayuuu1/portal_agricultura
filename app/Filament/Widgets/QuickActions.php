@@ -30,6 +30,7 @@ class QuickActions extends Widget
         /** @var User|null $user */
         $user = auth()->user();
         $canPublishPosts = (bool) $user?->hasPermission('noticias.publish');
+        $handlesStatisticsOnly = DocumentResource::managesOnlyAgrarianInformation();
 
         $actions = [
             ['noticias.create', $canPublishPosts ? 'Publicar noticia' : 'Redactar noticia',
@@ -37,7 +38,9 @@ class QuickActions extends Widget
                     ? 'Redacte la nota, elija la categoría y suba la foto de portada y la galería.'
                     : 'Redacte la nota y súbala como borrador; un editor la revisará y publicará.',
                 PostResource::getUrl('create'), Heroicon::OutlinedNewspaper],
-            ['documentos.create', 'Subir documento', 'Resoluciones, TUPA, POI, boletines y otros archivos PDF para el público.', DocumentResource::getUrl('create'), Heroicon::OutlinedDocumentArrowUp],
+            $handlesStatisticsOnly
+                ? ['documentos.create', 'Subir estadística del mes', 'Suba varios archivos a la vez y revise sus títulos antes de guardarlos.', DocumentResource::getUrl('index', ['action' => 'bulkUpload']), Heroicon::OutlinedDocumentArrowUp]
+                : ['documentos.create', 'Subir documento', 'Resoluciones, TUPA, POI, boletines y otros archivos PDF para el público.', DocumentResource::getUrl('create'), Heroicon::OutlinedDocumentArrowUp],
             ['convocatorias.create', 'Nueva convocatoria', 'Registre un proceso CAS y publique sus bases y resultados por etapa.', JobPostingResource::getUrl('create'), Heroicon::OutlinedBriefcase],
             ['banners.update', 'Cambiar banners', 'Edite los mensajes destacados del carrusel de la portada.', SlideResource::getUrl(), Heroicon::OutlinedPhoto],
             ['unidades.update', 'Actualizar directorio', 'Responsables, cargos, correos y teléfonos de cada oficina.', OrganizationalUnitResource::getUrl(), Heroicon::OutlinedBuildingOffice2],

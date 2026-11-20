@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\DocumentSection;
 use App\Enums\JobPostingStatus;
 use App\Models\Agency;
 use App\Models\Document;
@@ -10,6 +11,7 @@ use App\Models\Link;
 use App\Models\Post;
 use App\Models\Redirect;
 use App\Models\Slide;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -37,6 +39,9 @@ class HomeController extends Controller
                 ->latest('starts_at')->limit(4)->get(),
             'documents' => Document::query()->published()->with('documentType')
                 ->latest('issued_at')->limit(5)->get(),
+            'agrarianDocuments' => Document::query()->published()
+                ->whereHas('documentType', fn (Builder $query) => $query->where('section', DocumentSection::InformacionAgraria))
+                ->latest('issued_at')->limit(4)->get(),
             'agencies' => Agency::query()->active()->orderBy('sort_order')->get(),
             'interestLinks' => Link::query()->inCarousel()->get(),
             'stats' => [

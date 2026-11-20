@@ -44,14 +44,14 @@ class DocumentYearsTest extends TestCase
 
         $this->get('/documentos?tipo='.$type->slug)
             ->assertOk()
-            ->assertSee($recent->title)
-            ->assertDontSee($older->title)
+            ->assertSee(route('documents.show', $recent))
+            ->assertDontSee(route('documents.show', $older))
             ->assertSee('2019')
             ->assertSee('del año');
 
         $this->get('/documentos?tipo='.$type->slug.'&anio=2019')
-            ->assertSee($older->title)
-            ->assertDontSee($recent->title);
+            ->assertSee(route('documents.show', $older))
+            ->assertDontSee(route('documents.show', $recent));
 
         $this->get('/documentos?tipo='.$type->slug.'&anio=todos')
             ->assertSee($recent->title)

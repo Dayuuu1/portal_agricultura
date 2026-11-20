@@ -12,7 +12,7 @@
 <div x-data="accessibility" @keydown.window="onKeydown($event)" @click.outside="close(false)" class="a11y-widget print:hidden">
     <button type="button" x-ref="trigger" @click="toggle()" :aria-expanded="open.toString()" aria-controls="panel-accesibilidad"
         title="Accesibilidad (Alt + 0)"
-        class="fixed top-1/2 right-0 z-40 flex size-12 -translate-y-1/2 items-center justify-center rounded-l-2xl bg-brand-700 text-white shadow-lg ring-2 ring-white transition hover:bg-brand-800 hover:pr-1 focus-visible:outline-offset-0">
+        class="fixed bottom-4 left-4 z-40 flex size-12 items-center justify-center rounded-full bg-brand-700 text-white shadow-lg ring-2 ring-white transition hover:bg-brand-800 focus-visible:outline-offset-0 sm:top-1/2 sm:right-0 sm:bottom-auto sm:left-auto sm:-translate-y-1/2 sm:rounded-none sm:rounded-l-2xl sm:hover:pr-1">
         <span class="sr-only">Opciones de accesibilidad</span>
         <svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />

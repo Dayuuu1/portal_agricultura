@@ -8,6 +8,7 @@ use App\Filament\Resources\Posts\Pages\CreatePost;
 use App\Filament\Resources\Posts\Pages\EditPost;
 use App\Filament\Resources\Posts\Pages\ListPosts;
 use App\Models\Post;
+use App\Models\Setting;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -170,7 +171,7 @@ class PostResource extends Resource
                     ->disk('public')
                     ->imageSize(56)
                     ->square()
-                    ->defaultImageUrl(asset('images/logo-emblema.png')),
+                    ->defaultImageUrl(fn (): string => Setting::logoUrl()),
                 TextColumn::make('title')
                     ->label('Título')
                     ->searchable()

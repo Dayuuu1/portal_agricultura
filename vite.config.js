@@ -9,10 +9,12 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.js', 'resources/css/filament/admin/theme.css'],
             refresh: true,
             fonts: [
-                bunny('Inter', {
+                // Texto: Public Sans, diseñada para interfaces de gobierno y muy legible en pantallas pequeñas.
+                bunny('Public Sans', {
                     weights: [400, 500, 600, 700],
                 }),
-                bunny('Plus Jakarta Sans', {
+                // Títulos y cifras: grotesca con carácter, cálida y robusta.
+                bunny('Bricolage Grotesque', {
                     weights: [600, 700, 800],
                 }),
                 // "Fuente para dislexia" de la barra de accesibilidad: solo se descarga si el visitante la activa.

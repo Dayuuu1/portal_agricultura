@@ -1,4 +1,4 @@
-<x-layouts.app title="Noticias" description="Noticias, comunicados, campañas y ferias de la Dirección Regional Agraria de Madre de Dios.">
+<x-layouts.app title="Noticias" :description="'Noticias, comunicados, campañas y ferias de la '.\App\Models\Setting::valueOf('site_name', config('app.name')).'.'">
     <x-page-header title="Noticias" subtitle="Actividades, campañas, ferias y comunicados de la Dirección Regional." :breadcrumbs="['Noticias' => null]" />
 
     <div class="container-site mt-10">
@@ -16,12 +16,12 @@
 
         <nav aria-label="Categorías" class="mb-8 flex flex-wrap gap-2">
             <a href="{{ route('posts.index', array_filter(['q' => $term])) }}"
-                @class(['rounded-full px-4 py-1.5 text-sm font-semibold ring-1 transition', 'bg-brand-600 text-white ring-brand-600' => ! $activeCategory, 'bg-white text-slate-700 ring-slate-200 hover:ring-brand-300' => $activeCategory])>
+                @class(['inline-flex min-h-10 items-center rounded-full px-4 py-2 text-sm font-semibold ring-1 transition', 'bg-brand-600 text-white ring-brand-600 shadow-sm shadow-brand-900/20' => ! $activeCategory, 'bg-white text-slate-700 ring-slate-200 hover:-translate-y-px hover:ring-brand-300' => $activeCategory])>
                 Todas
             </a>
             @foreach ($categories as $category)
                 <a href="{{ route('posts.index', array_filter(['categoria' => $category->slug, 'q' => $term])) }}"
-                    @class(['rounded-full px-4 py-1.5 text-sm font-semibold ring-1 transition', 'bg-brand-600 text-white ring-brand-600' => $activeCategory === $category->slug, 'bg-white text-slate-700 ring-slate-200 hover:ring-brand-300' => $activeCategory !== $category->slug])
+                    @class(['inline-flex min-h-10 items-center rounded-full px-4 py-2 text-sm font-semibold ring-1 transition', 'bg-brand-600 text-white ring-brand-600 shadow-sm shadow-brand-900/20' => $activeCategory === $category->slug, 'bg-white text-slate-700 ring-slate-200 hover:-translate-y-px hover:ring-brand-300' => $activeCategory !== $category->slug])
                     @if ($activeCategory === $category->slug) aria-current="true" @endif>
                     {{ $category->name }}
                 </a>
@@ -34,7 +34,7 @@
                     <x-post-card :post="$post" />
                 @endforeach
             </div>
-            <div class="mt-10">{{ $posts->links() }}</div>
+            <div class="mt-10">{{ $posts->onEachSide(1)->links() }}</div>
         @else
             <x-empty-state icon="heroicon-o-newspaper" title="No se encontraron noticias" message="Pruebe con otros términos de búsqueda o quite el filtro de categoría." />
         @endif

@@ -1,6 +1,6 @@
 <x-filament-widgets::widget>
     <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-primary-700 to-primary-500 p-6 text-white shadow-sm">
-        <img src="{{ asset('images/logo-emblema.png') }}" alt="" class="pointer-events-none absolute -right-6 -bottom-8 hidden h-40 w-auto opacity-25 sm:block">
+        <img src="{{ \App\Models\Setting::logoUrl() }}" alt="" class="pointer-events-none absolute -right-6 -bottom-8 hidden h-40 w-auto opacity-25 sm:block">
 
         <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="space-y-2">

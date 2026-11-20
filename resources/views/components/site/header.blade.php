@@ -15,9 +15,9 @@
     $navigation = [
         ['key' => 'inicio', 'label' => 'Inicio', 'url' => route('home'), 'active' => ['home']],
         ['key' => 'institucional', 'label' => 'Institucional', 'active' => ['institutional.*', 'agencies.*'], 'mega' => true],
-        ['key' => 'informacion', 'label' => 'Información agraria', 'active' => ['agrarian-information'], 'children' => $agrarianLinks],
+        ['key' => 'informacion', 'label' => 'Información agraria', 'url' => route('agrarian-information'), 'active' => ['agrarian-information'], 'children' => $agrarianLinks],
         ['key' => 'noticias', 'label' => 'Noticias', 'url' => route('posts.index'), 'active' => ['posts.*']],
-        ['key' => 'documentos', 'label' => 'Documentos', 'active' => ['documents.*'], 'children' => [
+        ['key' => 'documentos', 'label' => 'Documentos', 'url' => route('documents.index'), 'active' => ['documents.*'], 'children' => [
             ['label' => 'Normas y resoluciones', 'url' => route('documents.index', ['seccion' => 'normativa'])],
             ['label' => 'Gestión institucional (TUPA, ROF, POI…)', 'url' => route('documents.index', ['seccion' => 'gestion'])],
             ['label' => 'Información agraria', 'url' => route('documents.index', ['seccion' => 'informacion-agraria'])],
@@ -28,11 +28,11 @@
         ['key' => 'contacto', 'label' => 'Contacto', 'url' => route('contact.create'), 'active' => ['contact.*']],
     ];
 
-    $topLinkClasses = 'flex items-center gap-1 px-3 py-3.5 text-sm font-semibold text-white/90 transition hover:bg-brand-700 hover:text-white';
+    $topLinkClasses = 'relative flex items-center gap-1 px-3 py-3.5 text-sm font-semibold text-white/90 transition-colors duration-200 hover:text-white after:absolute after:inset-x-3 after:bottom-0 after:h-[3px] after:origin-center after:scale-x-0 after:rounded-t-full after:bg-gold-400 after:transition-transform after:duration-300 after:ease-out-quint hover:after:scale-x-100';
 @endphp
 
 {{-- La cabecera completa es "sticky" con desplazamiento negativo: al bajar solo queda visible la franja del menú. --}}
-<header class="sticky -top-29 z-40 max-lg:-top-9 print:hidden" x-data="{ mobileOpen: false }" @keydown.escape.window="mobileOpen = false">
+<header class="group/header sticky -top-29 z-40 max-lg:-top-9 print:hidden" data-site-header x-data="{ mobileOpen: false }" @keydown.escape.window="mobileOpen = false">
     {{-- Barra superior --}}
     <div class="bg-brand-950 text-xs text-brand-100">
         <div class="container-site flex h-9 items-center justify-between gap-4">
@@ -89,7 +89,7 @@
     </div>
 
     {{-- Identidad y buscador --}}
-    <div class="border-b border-slate-200 bg-white">
+    <div class="border-b border-slate-200/80 bg-white/95 backdrop-blur-md transition-shadow duration-300 max-lg:group-data-[scrolled]/header:shadow-lg max-lg:group-data-[scrolled]/header:shadow-brand-950/10">
         <div class="container-site flex h-20 items-center justify-between gap-6">
             <a href="{{ route('home') }}" class="min-w-0" aria-label="Ir al inicio">
                 <x-site.logo />
@@ -100,7 +100,8 @@
                 <div class="relative flex-1">
                     <x-heroicon-o-magnifying-glass class="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-slate-400" />
                     <input type="search" id="busqueda-cabecera" name="q" minlength="3" placeholder="Buscar resoluciones, convocatorias, noticias…"
-                        class="form-input rounded-r-none py-2.5 pl-10">
+                        aria-keyshortcuts="/" class="peer form-input rounded-r-none py-2.5 pr-10 pl-10">
+                    <kbd class="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded-md bg-slate-100 px-1.5 py-0.5 font-sans text-xs font-semibold text-slate-500 ring-1 ring-slate-200 peer-placeholder-shown:inline-block peer-focus:hidden" title="Pulse / para buscar">/</kbd>
                 </div>
                 <button type="submit" class="btn-primary rounded-l-none py-2.5">Buscar</button>
             </form>
@@ -118,33 +119,44 @@
     </div>
 
     {{-- Menú principal (escritorio) --}}
-    <nav class="hidden bg-brand-800 shadow-md lg:block" aria-label="Navegación principal">
+    <nav class="hidden bg-brand-800 transition-shadow duration-300 group-data-[scrolled]/header:shadow-xl group-data-[scrolled]/header:shadow-brand-950/25 lg:block" aria-label="Navegación principal">
         <div class="container-site relative">
             <ul class="flex items-stretch">
                 @foreach ($navigation as $item)
                     @php($isActive = request()->routeIs(...$item['active']))
-                    @php($activeClasses = $isActive ? 'bg-brand-900 text-white shadow-[inset_0_-3px_0_var(--color-gold-400)]' : '')
+                    @php($activeClasses = $isActive ? 'bg-brand-900/60 text-white after:scale-x-100' : '')
 
                     @if (isset($item['children']) || isset($item['mega']))
                         <li @class(['static' => isset($item['mega']), 'relative' => ! isset($item['mega'])]) data-menu="{{ $item['key'] }}"
                             x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false"
                             @focusout="if (! $el.contains($event.relatedTarget)) open = false">
-                            <button type="button" @click="open = ! open" :aria-expanded="open.toString()" class="{{ $topLinkClasses }} {{ $activeClasses }}">
-                                {{ $item['label'] }}
-                                <x-heroicon-o-chevron-down class="size-4 transition" ::class="open && 'rotate-180'" />
-                            </button>
+                            @isset($item['url'])
+                                {{-- El nombre lleva a la página de la sección; la flecha abre el submenú (también se abre al pasar el cursor). --}}
+                                <div @class(['flex h-full items-stretch', 'bg-brand-900/60' => $isActive])>
+                                    <a href="{{ $item['url'] }}" @class([$topLinkClasses, 'pr-1.5', 'text-white after:scale-x-100' => $isActive])>{{ $item['label'] }}</a>
+                                    <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-label="Más opciones de {{ $item['label'] }}"
+                                        class="flex items-center pr-2.5 pl-0.5 text-white/80 transition-colors hover:text-white">
+                                        <x-heroicon-o-chevron-down class="size-4 transition" ::class="open && 'rotate-180'" />
+                                    </button>
+                                </div>
+                            @else
+                                <button type="button" @click="open = ! open" :aria-expanded="open.toString()" class="{{ $topLinkClasses }} {{ $activeClasses }}">
+                                    {{ $item['label'] }}
+                                    <x-heroicon-o-chevron-down class="size-4 transition" ::class="open && 'rotate-180'" />
+                                </button>
+                            @endisset
 
                             @isset($item['mega'])
                                 {{-- Menú institucional: igual que el antiguo menú «DRAMDD», con todas las oficinas y sus unidades --}}
-                                <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-4 top-full z-50 pt-1 sm:inset-x-6 lg:inset-x-8">
-                                    <div class="card grid max-h-[75vh] gap-8 overflow-y-auto p-6 shadow-2xl lg:grid-cols-12">
+                                <div x-cloak x-show="open" x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="-translate-y-2 opacity-0" x-transition:leave="transition duration-150 ease-in" x-transition:leave-end="-translate-y-1 opacity-0" class="absolute inset-x-4 top-full z-50 pt-2 sm:inset-x-6 lg:inset-x-8">
+                                    <div class="card grid max-h-[75vh] gap-8 overflow-y-auto p-6 shadow-2xl shadow-brand-950/20 lg:grid-cols-12">
                                         <div class="lg:col-span-3 lg:border-r lg:border-slate-100 lg:pr-6">
-                                            <p class="mb-3 text-xs font-bold tracking-wider text-slate-400 uppercase">La institución</p>
+                                            <p class="mb-3 text-sm font-semibold text-slate-500">La institución</p>
                                             <ul class="space-y-1">
                                                 @foreach ($institutionalLinks as $link)
                                                     <li>
-                                                        <a href="{{ $link['url'] }}" class="flex items-start gap-3 rounded-xl p-2.5 hover:bg-brand-50">
-                                                            <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-700">
+                                                        <a href="{{ $link['url'] }}" class="group flex items-start gap-3 rounded-xl p-2.5 transition-colors hover:bg-brand-50">
+                                                            <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-700 transition-colors group-hover:bg-brand-600 group-hover:text-white">
                                                                 <x-dynamic-component :component="$link['icon']" class="size-4" />
                                                             </span>
                                                             <span>
@@ -157,7 +169,7 @@
                                             </ul>
                                         </div>
                                         <div class="lg:col-span-9">
-                                            <p class="mb-3 text-xs font-bold tracking-wider text-slate-400 uppercase">Órganos y unidades</p>
+                                            <p class="mb-3 text-sm font-semibold text-slate-500">Órganos y unidades</p>
                                             <ul class="grid gap-x-8 gap-y-5 sm:grid-cols-2 xl:grid-cols-3">
                                                 @foreach ($menu['offices'] as $office)
                                                     <li>
@@ -192,13 +204,13 @@
                                     </div>
                                 </div>
                             @else
-                                <div x-cloak x-show="open" x-transition.origin.top class="absolute left-0 top-full z-50 w-80 pt-1">
-                                    <ul class="card overflow-hidden p-2 shadow-xl">
+                                <div x-cloak x-show="open" x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="-translate-y-2 opacity-0" x-transition:leave="transition duration-150 ease-in" x-transition:leave-end="-translate-y-1 opacity-0" class="absolute top-full left-0 z-50 w-80 pt-2">
+                                    <ul class="card overflow-hidden p-2 shadow-2xl shadow-brand-950/20">
                                         @foreach ($item['children'] as $child)
                                             <li>
-                                                <a href="{{ $child['url'] }}" class="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-800">
+                                                <a href="{{ $child['url'] }}" class="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-brand-50 hover:text-brand-800">
                                                     {{ $child['label'] }}
-                                                    <x-heroicon-o-chevron-right class="size-4 shrink-0 text-slate-300" />
+                                                    <x-heroicon-m-chevron-right class="size-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-brand-600" />
                                                 </a>
                                             </li>
                                         @endforeach
@@ -244,7 +256,7 @@
                                         @foreach ($institutionalLinks as $link)
                                             <li><a href="{{ $link['url'] }}" class="block rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-800">{{ $link['label'] }}</a></li>
                                         @endforeach
-                                        <li class="px-3 pt-3 pb-1 text-xs font-bold tracking-wider text-slate-400 uppercase">Órganos y unidades</li>
+                                        <li class="px-3 pt-3 pb-1 text-sm font-semibold text-slate-500">Órganos y unidades</li>
                                         @foreach ($menu['offices'] as $office)
                                             <li x-data="{ sub: false }">
                                                 <div class="flex items-center">

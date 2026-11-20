@@ -18,4 +18,25 @@ enum DocumentSection: string implements HasLabel
             self::InformacionAgraria => 'Información agraria',
         };
     }
+
+    /**
+     * One-line summary shown on the public documents overview.
+     */
+    public function description(): string
+    {
+        return match ($this) {
+            self::Normativa => 'Resoluciones directorales y documentos de saneamiento físico legal.',
+            self::Gestion => 'Instrumentos de gestión, planeamiento, presupuesto, control y rendición de cuentas.',
+            self::InformacionAgraria => 'Estadística agrícola y pecuaria, boletines, información agroindustrial y precios de mercado.',
+        };
+    }
+
+    public function icon(): string
+    {
+        return match ($this) {
+            self::Normativa => 'heroicon-o-scale',
+            self::Gestion => 'heroicon-o-folder',
+            self::InformacionAgraria => 'heroicon-o-chart-bar',
+        };
+    }
 }

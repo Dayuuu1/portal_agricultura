@@ -7,6 +7,8 @@ use App\Models\Concerns\HasUniqueSlug;
 use App\Models\Concerns\LogsActivity;
 use Database\Factories\DocumentTypeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -36,5 +38,19 @@ class DocumentType extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    /**
+     * Statistics published every month (crop production, prices, bulletins…), whose titles name the month they report on.
+     */
+    public function isMonthlyStatistics(): bool
+    {
+        return $this->section === DocumentSection::InformacionAgraria && $this->group_by_year;
+    }
+
+    #[Scope]
+    protected function monthlyStatistics(Builder $query): void
+    {
+        $query->where('section', DocumentSection::InformacionAgraria)->where('group_by_year', true);
     }
 }

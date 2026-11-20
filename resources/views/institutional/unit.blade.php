@@ -57,7 +57,7 @@
                         <x-heroicon-o-user class="size-8 text-brand-600" />
                     @endif
                 </div>
-                <p class="text-xs font-semibold tracking-wider text-brand-600 uppercase">{{ $unit->head_title ?? 'Responsable' }}</p>
+                <p class="text-sm font-semibold text-brand-600">{{ $unit->head_title ?? 'Responsable' }}</p>
                 <p class="font-display text-lg font-bold text-slate-900">{{ $unit->head_name ?: 'Por actualizar' }}</p>
                 <dl class="mt-4 space-y-2 text-sm">
                     @if ($unit->email)

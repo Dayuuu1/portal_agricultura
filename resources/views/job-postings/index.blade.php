@@ -30,7 +30,7 @@
                     <x-job-posting-item :job-posting="$jobPosting" />
                 @endforeach
             </div>
-            <div class="mt-8">{{ $jobPostings->links() }}</div>
+            <div class="mt-8">{{ $jobPostings->onEachSide(1)->links() }}</div>
         @else
             <x-empty-state icon="heroicon-o-briefcase" title="No hay convocatorias con estos filtros" />
         @endif

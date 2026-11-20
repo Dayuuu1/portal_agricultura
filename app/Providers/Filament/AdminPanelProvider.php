@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Resources\ActivityLogs\ActivityLogResource;
+use App\Models\Setting;
 use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
@@ -49,12 +50,14 @@ class AdminPanelProvider extends PanelProvider
             ->multiFactorAuthentication([
                 AppAuthentication::make()
                     ->recoverable()
-                    ->brandName('DRA Madre de Dios'),
+                    // Name shown in the authenticator app; read while the panel is built, when the settings table may not exist yet (fresh installs).
+                    ->brandName(rescue(fn (): string => Setting::shortName(), 'Dirección Regional Agraria', report: false)),
             ])
-            ->brandName('DRA Madre de Dios · Administración')
+            // Name and images come from «Datos del portal», so the entity can change them without touching the code.
+            ->brandName(fn (): string => Setting::shortName().' · Administración')
             ->brandLogo(fn (): View => view('filament.brand'))
             ->brandLogoHeight('2.75rem')
-            ->favicon('/favicon-32.png')
+            ->favicon(fn (): string => Setting::faviconUrl())
             ->defaultThemeMode(ThemeMode::Light)
             ->colors([
                 'primary' => array_map(fn (string $hex): string => Color::convertToOklch($hex), self::BRAND_PALETTE),

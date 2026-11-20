@@ -14,7 +14,7 @@
 <div x-data="{ hovered: false, stopped: false }" class="link-carousel">
     <x-section-heading :eyebrow="$eyebrow" :title="$title" :id="$headingId">
         <button type="button" @click="stopped = ! stopped" :aria-pressed="stopped.toString()"
-            class="link-carousel-toggle inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-sm font-semibold text-brand-800 shadow-sm ring-1 ring-slate-200 hover:bg-brand-50">
+            class="link-carousel-toggle inline-flex min-h-11 items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand-800 shadow-sm ring-1 ring-slate-200 transition hover:bg-brand-50 active:scale-[0.98]">
             <x-heroicon-o-pause x-show="! stopped" class="size-4" />
             <x-heroicon-o-play x-show="stopped" x-cloak class="size-4" />
             <span x-text="stopped ? 'Reanudar' : 'Pausar'">Pausar</span>
@@ -32,18 +32,18 @@
                         <li class="w-52 shrink-0 sm:w-60" @if ($isCopy && ! $isDuplicateHalf) aria-hidden="true" data-duplicate @endif>
                             <a href="{{ $link->url }}" target="_blank" rel="noopener" title="{{ $link->description ?: $link->name }}"
                                 @if ($isCopy) tabindex="-1" @endif
-                                class="card flex h-24 items-center justify-center px-5 py-3 transition hover:shadow-md hover:ring-brand-300">
+                                class="card card-link group flex h-24 items-center justify-center px-5 py-3">
                                 @if ($link->logo_url)
                                     <img src="{{ $link->logo_url }}" alt="{{ $link->description ? $link->name.': '.$link->description : $link->name }}"
-                                        class="max-h-16 w-full object-contain" loading="lazy" decoding="async">
-                                @else
-                                    <span class="text-center">
-                                        <span class="block font-display text-lg leading-tight font-extrabold text-brand-700">{{ $link->name }}</span>
-                                        @if ($link->description)
-                                            <span class="mt-0.5 line-clamp-2 block text-[0.7rem] leading-snug text-slate-500">{{ $link->description }}</span>
-                                        @endif
-                                    </span>
+                                        class="max-h-16 w-full object-contain grayscale-35 transition duration-300 group-hover:grayscale-0" loading="lazy" decoding="async">
                                 @endif
+                                {{-- Name shown when there is no logo, or when the logo file fails to load. --}}
+                                <span @class(['text-center', 'link-logo-fallback' => $link->logo_url]) @if ($link->logo_url) aria-hidden="true" @endif>
+                                    <span class="block font-display text-lg leading-tight font-bold text-brand-700">{{ $link->name }}</span>
+                                    @if ($link->description)
+                                        <span class="mt-0.5 line-clamp-2 block text-[0.7rem] leading-snug text-slate-500">{{ $link->description }}</span>
+                                    @endif
+                                </span>
                                 <span class="sr-only">(se abre en una pestaña nueva)</span>
                             </a>
                         </li>

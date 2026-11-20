@@ -113,6 +113,29 @@ class PublicSiteTest extends TestCase
             ->assertSee($jobPosting->code);
     }
 
+    public function test_home_highlights_only_published_agrarian_information(): void
+    {
+        $agrarianType = DocumentType::factory()->section(DocumentSection::InformacionAgraria)->create();
+        $bulletin = Document::factory()->for($agrarianType)->create(['title' => 'Boletín estadístico octubre 2026']);
+        $hiddenBulletin = Document::factory()->for($agrarianType)->unpublished()->create(['title' => 'Boletín borrador noviembre 2026']);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSeeInOrder(['Últimas publicaciones', $bulletin->title])
+            ->assertDontSee($hiddenBulletin->title);
+    }
+
+    public function test_home_omits_agrarian_block_list_when_there_are_no_bulletins(): void
+    {
+        $resolutionType = DocumentType::factory()->section(DocumentSection::Normativa)->create();
+        Document::factory()->for($resolutionType)->create(['title' => 'Resolución Directoral N° 001-2026']);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Boletines estadísticos y precios de mercado')
+            ->assertDontSee('Últimas publicaciones');
+    }
+
     public function test_draft_and_scheduled_posts_are_hidden(): void
     {
         $visible = Post::factory()->create();

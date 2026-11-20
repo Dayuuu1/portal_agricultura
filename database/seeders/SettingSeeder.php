@@ -11,11 +11,14 @@ class SettingSeeder extends Seeder
     {
         $settings = [
             ['general', 'site_name', 'Nombre de la entidad', 'text', 'Dirección Regional de Desarrollo Agropecuario y Riego de Madre de Dios'],
+            ['general', 'site_short_name', 'Nombre corto (junto al logo y en el panel)', 'text', 'Dirección Regional Agraria'],
             ['general', 'site_acronym', 'Siglas', 'text', 'DRDAR'],
             ['general', 'parent_entity', 'Entidad a la que pertenece', 'text', 'Gobierno Regional de Madre de Dios'],
+            ['general', 'site_logo', 'Logo', 'image', null],
+            ['general', 'site_favicon', 'Ícono de la pestaña del navegador', 'image', null],
             ['general', 'site_description', 'Descripción breve', 'textarea', 'Órgano del Gobierno Regional de Madre de Dios encargado de promover, supervisar, evaluar, dirigir y controlar las actividades productivas agrarias de la región.'],
-            ['institucional', 'mission', 'Misión (texto referencial: reemplazar por el oficial)', 'textarea', 'Promover el desarrollo agrario competitivo, sostenible e inclusivo de Madre de Dios, brindando a los productores servicios de asistencia técnica, información agraria, saneamiento físico legal de la propiedad rural y articulación a mercados.'],
-            ['institucional', 'vision', 'Visión (texto referencial: reemplazar por el oficial)', 'textarea', 'Madre de Dios con productores agrarios organizados, competitivos y articulados a los mercados, que aprovechan de forma sostenible la biodiversidad amazónica.'],
+            ['institucional', 'mission', 'Misión (texto referencial: reemplazar por el oficial)', 'textarea', Setting::REFERENCE_TEXTS['mission']],
+            ['institucional', 'vision', 'Visión (texto referencial: reemplazar por el oficial)', 'textarea', Setting::REFERENCE_TEXTS['vision']],
             ['contacto', 'address', 'Dirección', 'text', 'Av. Fitzcarrald N° 265, Puerto Maldonado, Tambopata – Madre de Dios'],
             ['contacto', 'phone_main', 'Teléfono central', 'text', '082 572668'],
             ['contacto', 'phone_director', 'Teléfono Dirección', 'text', '082 639069'],

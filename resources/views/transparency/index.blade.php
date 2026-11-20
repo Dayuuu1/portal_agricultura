@@ -4,7 +4,7 @@
     <div class="container-site mt-10 space-y-12">
         <section class="grid gap-4 md:grid-cols-3">
             @if (! empty($settings['transparencia_url']))
-                <a href="{{ $settings['transparencia_url'] }}" target="_blank" rel="noopener" class="card group flex items-start gap-4 bg-brand-800 p-6 text-white ring-0 hover:bg-brand-900">
+                <a href="{{ $settings['transparencia_url'] }}" target="_blank" rel="noopener" class="card card-link group flex items-start gap-4 bg-brand-900 p-6 text-white ring-0 hover:bg-brand-800">
                     <x-heroicon-o-eye class="size-8 shrink-0 text-gold-300" />
                     <span>
                         <span class="block text-lg font-bold">Portal de Transparencia Estándar</span>
@@ -17,14 +17,14 @@
                     <p class="text-sm text-amber-900">El enlace al Portal de Transparencia Estándar (PTE) se configura desde el panel de administración.</p>
                 </div>
             @endif
-            <a href="{{ route('job-postings.index') }}" class="card group flex items-start gap-4 p-6 hover:shadow-md">
+            <a href="{{ route('job-postings.index') }}" class="card card-link group flex items-start gap-4 p-6">
                 <x-heroicon-o-briefcase class="size-8 shrink-0 text-brand-600" />
                 <span>
                     <span class="block text-lg font-bold text-slate-900 group-hover:text-brand-700">Convocatorias de personal</span>
                     <span class="text-sm text-slate-600">Procesos CAS, bases y resultados.</span>
                 </span>
             </a>
-            <a href="{{ route('contact.create') }}" class="card group flex items-start gap-4 p-6 hover:shadow-md">
+            <a href="{{ route('contact.create') }}" class="card card-link group flex items-start gap-4 p-6">
                 <x-heroicon-o-chat-bubble-left-right class="size-8 shrink-0 text-brand-600" />
                 <span>
                     <span class="block text-lg font-bold text-slate-900 group-hover:text-brand-700">Solicitud de información</span>
@@ -66,7 +66,7 @@
                 <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($stateLinks as $link)
                         <li>
-                            <a href="{{ $link->url }}" target="_blank" rel="noopener" class="card flex h-full items-center justify-between gap-3 p-4 hover:shadow-md">
+                            <a href="{{ $link->url }}" target="_blank" rel="noopener" class="card card-link group flex h-full items-center justify-between gap-3 p-4">
                                 <span>
                                     <span class="block font-bold text-slate-900">{{ $link->name }}</span>
                                     <span class="block text-xs text-slate-500">{{ $link->description }}</span>

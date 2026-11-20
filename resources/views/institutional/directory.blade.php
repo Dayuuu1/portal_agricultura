@@ -6,7 +6,7 @@
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-slate-200 text-sm">
                     <caption class="sr-only">Directorio de autoridades y responsables</caption>
-                    <thead class="bg-slate-50 text-left text-xs font-bold tracking-wider text-slate-500 uppercase">
+                    <thead class="bg-slate-50 text-left text-sm font-semibold text-slate-600">
                         <tr>
                             <th scope="col" class="px-5 py-3">Órgano</th>
                             <th scope="col" class="px-5 py-3">Responsable</th>
