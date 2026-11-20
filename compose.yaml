@@ -1,0 +1,48 @@
+# Base de datos del portal. Las credenciales se leen del archivo .env del proyecto.
+#   docker compose up -d                         → MySQL en 127.0.0.1:${MYSQL_PORT}
+#   docker compose --profile herramientas up -d  → además phpMyAdmin en http://127.0.0.1:8081
+name: portal-dramdd
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: dramdd-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?Defina MYSQL_DATABASE en .env}
+      MYSQL_USER: ${MYSQL_USER:?Defina MYSQL_USER en .env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Defina MYSQL_PASSWORD en .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Defina MYSQL_ROOT_PASSWORD en .env}
+      TZ: America/Lima
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=-05:00
+    ports:
+      - "127.0.0.1:${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: dramdd-phpmyadmin
+    profiles: ["herramientas"]
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      UPLOAD_LIMIT: 128M
+    ports:
+      - "127.0.0.1:8081:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql-data:
+    name: dramdd-mysql-data
