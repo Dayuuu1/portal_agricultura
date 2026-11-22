@@ -43,6 +43,9 @@ class RoleSeeder extends Seeder
             ['Institucional', 'Mantiene el directorio, el organigrama y las agencias agrarias.', [
                 'unidades' => self::CRUD, 'agencias' => self::CRUD, 'enlaces' => self::CRUD,
             ], null],
+            ['Mesa de partes', 'Trámite documentario: revisa los documentos de la Mesa de Partes Virtual, los observa, deriva y registra las respuestas.', [
+                'mesa_partes' => ['view', 'update'], 'mesa_partes_config' => ['view'],
+            ], null],
             ['Atención al ciudadano', 'Atiende los mensajes de contacto y los reclamos del Libro de Reclamaciones.', [
                 'mensajes' => ['view', 'update'], 'reclamaciones' => ['view', 'update'],
             ], null],

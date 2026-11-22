@@ -1,7 +1,7 @@
 # Plan de desarrollo: Mesa de Partes Virtual temporal
 
 **Portal institucional de la Dirección Regional Agraria de Madre de Dios**
-Versión 1 · 20 de noviembre de 2026 · Estado: **propuesta, pendiente de decisiones de la entidad** (ver sección 11)
+Versión 2 · 20 de noviembre de 2026 · Estado: **fase 1 implementada y desactivada**, a la espera de la aprobación de la entidad (ver secciones 11 y 13)
 
 > **Nota legal.** Las referencias normativas de este documento sirven para orientar el diseño. Deben ser validadas por la Oficina de Asesoría Jurídica antes de poner en marcha el servicio, en especial los artículos citados y las reglas de notificación.
 
@@ -303,3 +303,45 @@ Cuando la MPV esté activa, los accesos de la portada, Contacto y Libro de Recla
 6. Subsanación, notificaciones (bandeja y correo por cola) y consulta sin cuenta.
 7. Permisos, rol «Mesa de Partes», indicadores en el escritorio y accesos desde la portada.
 8. Pruebas de la sección 9, revisión de accesibilidad y prueba completa en un entorno de pruebas con SMTP real.
+
+---
+
+## 13. Estado de la implementación (20 de noviembre de 2026)
+
+La fase 1 está construida y probada, pero **el servicio está apagado** (`mpv_enabled = 0`). Mientras siga apagado, la página `/mesa-de-partes` explica que el servicio todavía no recibe documentos, no se pueden crear cuentas y los enlaces del portal siguen apuntando al canal anterior.
+
+### 13.1 Qué se construyó
+
+| Área | Detalle |
+|---|---|
+| Copia de seguridad previa | `backup_portal_dramdd_2026-11-20_1259_antes_mesa_de_partes.sql` en la raíz del proyecto (excluida de git) |
+| Base de datos | Migración `2026_11_20_130116_create_mesa_de_partes_tables`: ciudadanos, tipos de trámite, expedientes, archivos, hoja de ruta, casilla de notificaciones y días no laborables. Agrega 15 ajustes del grupo `mesa_partes` y 3 tipos de trámite base, editables y desactivables |
+| Cuentas de ciudadanos | Guard `citizen` separado del panel. Registro de persona natural o jurídica, con aviso de privacidad, declaración de veracidad y autorización opcional de notificación electrónica. Verificación de correo, ingreso con límite de intentos, recuperación de contraseña, perfil y suspensión desde el panel |
+| Presentación | Asistente de 4 pasos. El documento principal va en PDF y los anexos en PDF, JPG o PNG. Comprobante de pago cuando el trámite lo exige. Se calculan folios y huella SHA-256, y los archivos se guardan en el disco privado |
+| Fecha de presentación | Recepción 24/7. Lo que llega fuera del horario o en un día no hábil cuenta desde el día hábil siguiente (Ley 31170). Se excluyen los feriados nacionales, la Semana Santa y los días no laborables registrados en el panel |
+| Cargo | Número `{PREFIJO}-AAAA-NNNNNN`, fecha y hora, folios, huellas, plazo y base legal. Se puede imprimir o guardar como PDF desde el navegador |
+| Seguimiento | Hoja de ruta con fecha y hora de cada paso. Las notas internas no se muestran al ciudadano. Consulta sin cuenta con número y documento de identidad, que puede desactivarse |
+| Observaciones | El plazo para subsanar es configurable (2 días hábiles por defecto, art. 136). El ciudadano subsana desde su cuenta. Vencido el plazo, la entidad puede declarar el documento «no presentado» |
+| Notificaciones | Casilla en la cuenta, con constancia de lectura. Los avisos formales solo se envían por correo si el ciudadano lo autorizó (art. 20.4). La mesa de partes recibe un aviso de cada documento nuevo y de cada subsanación |
+| Panel | Grupo «Mesa de partes» con: expedientes (pestañas por revisar, observados, en trámite, plazo vencido y concluidos); acciones observar, admitir y derivar, registrar respuesta, en atención, no presentado, archivar y nota interna; administrados; tipos de trámite; días no laborables; configuración. El escritorio muestra tareas pendientes |
+| Permisos | Módulos `mesa_partes` (ver y atender) y `mesa_partes_config` (configuración). En instalaciones nuevas se crea el rol «Mesa de partes» |
+| Pruebas | 25 pruebas del módulo; 226 en total, todas aprobadas |
+
+### 13.2 Qué se configura sin programar (Mesa de partes › Configuración)
+
+Encendido o apagado del servicio; horario de atención; norma que aprueba el servicio; plazo para subsanar; plazo de atención por defecto; tamaño máximo por archivo y por trámite; cantidad de anexos; cuentas de personas jurídicas; consulta sin cuenta; correo que recibe los avisos; prefijo del número; indicaciones y base legal que ve la ciudadanía. Cada tipo de trámite tiene su propio plazo, costo, requisitos, oficina por defecto y la opción de exigir comprobante. Los días no laborables se registran en su propia pantalla.
+
+### 13.3 Antes de encender el servicio
+
+1. Aprobar el servicio con resolución o directiva (11.1) y registrar su número en la configuración.
+2. Configurar el SMTP institucional en `.env` (11.5). Hoy `MAIL_MAILER=log`, así que no sale ningún correo. Los correos se envían al momento, sin cola. Si uno falla, el error queda en el log y la notificación sigue disponible en la casilla del ciudadano.
+3. Crear en el panel el rol «Mesa de partes» y asignarlo al personal. El seeder solo lo crea en instalaciones nuevas.
+4. Revisar los tipos de trámite base y registrar los días no laborables del año.
+5. Hacer una prueba completa en un entorno de pruebas con correo real.
+6. Validar con Asesoría Jurídica si la entidad debe integrarse a la plataforma MESA DIGITAL PERÚ (D.S. N° 098-2025-PCM). Este módulo es temporal y no reemplaza esa obligación.
+
+### 13.4 Límites conocidos
+
+- No hay firma digital ni validación con RENIEC (11.4 y 11.8). El escrito se presenta escaneado y firmado, con declaración jurada de veracidad.
+- Sin un SGD, la atención interna se registra a mano: derivación a una oficina, respuesta y archivo. Las oficinas no tienen todavía una bandeja propia (fase 2).
+- Los días no laborables registrados afectan también el cómputo de plazos del Libro de Reclamaciones.

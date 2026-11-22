@@ -89,7 +89,8 @@ class ActivityLog extends Model
         }
 
         static::query()->create([
-            'user_id' => $userId ?? auth()->id(),
+            // Always the panel user: on Mesa de Partes requests the default guard is the citizen's.
+            'user_id' => $userId ?? auth()->guard('web')->id(),
             'event' => $event,
             'subject_type' => $subject?->getMorphClass(),
             'subject_id' => $subject?->getKey(),

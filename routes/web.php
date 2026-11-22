@@ -9,6 +9,15 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InstitutionalController;
 use App\Http\Controllers\JobPostingController;
 use App\Http\Controllers\LegacyRedirectController;
+use App\Http\Controllers\MesaPartes\AccountController;
+use App\Http\Controllers\MesaPartes\LoginController;
+use App\Http\Controllers\MesaPartes\MesaPartesController;
+use App\Http\Controllers\MesaPartes\NotificationController;
+use App\Http\Controllers\MesaPartes\PasswordResetController;
+use App\Http\Controllers\MesaPartes\RegisterController;
+use App\Http\Controllers\MesaPartes\SubmissionController;
+use App\Http\Controllers\MesaPartes\SubmissionFileController;
+use App\Http\Controllers\MesaPartes\VerificationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SearchController;
@@ -46,6 +55,54 @@ Route::post('/contacto', [ContactController::class, 'store'])->middleware('throt
 Route::get('/libro-de-reclamaciones', [ComplaintController::class, 'create'])->name('complaints.create');
 Route::post('/libro-de-reclamaciones', [ComplaintController::class, 'store'])->middleware('throttle:5,1')->name('complaints.store');
 Route::get('/libro-de-reclamaciones/constancia/{complaint:code}', [ComplaintController::class, 'receipt'])->middleware('signed')->name('complaints.receipt');
+
+/*
+| Mesa de Partes Virtual (Ley N° 31170). Citizens use their own guard («citizen»), separate from the panel users.
+*/
+Route::prefix('mesa-de-partes')->name('mesa-partes.')->group(function () {
+    Route::get('/', [MesaPartesController::class, 'index'])->name('index');
+    Route::get('/consulta', [MesaPartesController::class, 'lookup'])->middleware('throttle:20,1')->name('lookup');
+
+    Route::middleware('guest:citizen')->group(function () {
+        Route::middleware('mesa-partes.enabled')->group(function () {
+            Route::get('/registro', [RegisterController::class, 'create'])->name('register');
+            Route::post('/registro', [RegisterController::class, 'store'])->middleware('throttle:5,1')->name('register.store');
+        });
+        Route::get('/ingresar', [LoginController::class, 'create'])->name('login');
+        Route::post('/ingresar', [LoginController::class, 'store'])->middleware('throttle:10,1')->name('login.store');
+        Route::get('/recuperar-contrasena', [PasswordResetController::class, 'request'])->name('password.request');
+        Route::post('/recuperar-contrasena', [PasswordResetController::class, 'email'])->middleware('throttle:5,1')->name('password.email');
+        Route::get('/restablecer-contrasena/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');
+        Route::post('/restablecer-contrasena', [PasswordResetController::class, 'update'])->middleware('throttle:5,1')->name('password.update');
+    });
+
+    Route::middleware(['auth:citizen', 'mesa-partes.active'])->group(function () {
+        Route::post('/salir', [LoginController::class, 'destroy'])->name('logout');
+        Route::get('/verificar-correo', [VerificationController::class, 'notice'])->name('verification.notice');
+        Route::get('/verificar-correo/{id}/{hash}', [VerificationController::class, 'verify'])->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+        Route::post('/verificar-correo/reenviar', [VerificationController::class, 'send'])->middleware('throttle:3,1')->name('verification.send');
+
+        Route::prefix('mi-cuenta')->middleware('verified:mesa-partes.verification.notice')->group(function () {
+            Route::get('/', [AccountController::class, 'dashboard'])->name('account');
+            Route::middleware('mesa-partes.enabled')->group(function () {
+                Route::get('/tramites/nuevo', [SubmissionController::class, 'create'])->name('submissions.create');
+                Route::post('/tramites', [SubmissionController::class, 'store'])->middleware('throttle:10,60')->name('submissions.store');
+            });
+            Route::get('/tramites/{submission}', [SubmissionController::class, 'show'])->name('submissions.show');
+            Route::get('/tramites/{submission}/cargo', [SubmissionController::class, 'receipt'])->name('submissions.receipt');
+            Route::post('/tramites/{submission}/subsanar', [SubmissionController::class, 'cure'])->middleware('throttle:10,60')->name('submissions.cure');
+            Route::get('/archivos/{file}', [SubmissionFileController::class, 'citizen'])->name('files.download');
+            Route::get('/notificaciones', [NotificationController::class, 'index'])->name('notifications.index');
+            Route::get('/notificaciones/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
+            Route::get('/perfil', [AccountController::class, 'edit'])->name('profile');
+            Route::put('/perfil', [AccountController::class, 'update'])->name('profile.update');
+            Route::put('/perfil/contrasena', [AccountController::class, 'password'])->name('profile.password');
+        });
+    });
+});
+
+// Files of the expedientes for the panel staff (private disk).
+Route::get('/admin/archivos/mesa-de-partes/{file}', [SubmissionFileController::class, 'staff'])->middleware('auth')->name('admin.mesa-partes.file');
 
 Route::get('/buscar', SearchController::class)->name('search');
 Route::get('/p/{page:slug}', PageController::class)->name('pages.show');

@@ -10,6 +10,7 @@ use App\Filament\Resources\JobPostings\JobPostingResource;
 use App\Filament\Resources\OrganizationalUnits\OrganizationalUnitResource;
 use App\Filament\Resources\Posts\PostResource;
 use App\Filament\Resources\Settings\SettingResource;
+use App\Filament\Resources\Submissions\SubmissionResource;
 use App\Models\Complaint;
 use App\Models\ContactMessage;
 use App\Models\Document;
@@ -17,6 +18,7 @@ use App\Models\JobPosting;
 use App\Models\OrganizationalUnit;
 use App\Models\Post;
 use App\Models\Setting;
+use App\Models\Submission;
 use App\Models\User;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\Widget;
@@ -41,6 +43,15 @@ class PendingTasks extends Widget
         $overdueComplaints = $user->hasPermission('reclamaciones.view') ? Complaint::query()->overdue()->count() : 0;
 
         $candidates = [
+            ['mesa_partes.view', fn (): int => Submission::query()->toReview()->count(),
+                'Documentos por revisar en mesa de partes', 'Recibidos o subsanados por la ciudadanía: admítalos y derívelos, u obsérvelos si falta un requisito.',
+                SubmissionResource::getUrl(parameters: ['tab' => 'por-revisar']), Heroicon::OutlinedInboxArrowDown, 'warning'],
+            ['mesa_partes.update', fn (): int => Submission::query()->expiredObservations()->count(),
+                'Observaciones con plazo vencido', 'El administrado no subsanó a tiempo: corresponde declarar el documento no presentado.',
+                SubmissionResource::getUrl(parameters: ['tab' => 'observados']), Heroicon::OutlinedExclamationTriangle, 'danger'],
+            ['mesa_partes.view', fn (): int => Submission::query()->overdue()->count(),
+                'Expedientes con plazo de atención vencido', 'Derivados a una oficina que aún no registra la respuesta.',
+                SubmissionResource::getUrl(parameters: ['tab' => 'vencidos']), Heroicon::OutlinedClock, 'danger'],
             ['reclamaciones.view', fn (): int => Complaint::query()->open()->count(),
                 'Reclamos por responder', $overdueComplaints > 0
                     ? "¡{$overdueComplaints} con el plazo legal de 30 días hábiles vencido! Respóndalos cuanto antes."

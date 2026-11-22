@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Carbon\CarbonInterface;
+use Closure;
 use Illuminate\Support\Carbon;
 
 /**
@@ -11,6 +12,11 @@ use Illuminate\Support\Carbon;
  */
 final class BusinessDays
 {
+    /**
+     * @var (Closure(): list<string>)|null
+     */
+    private static ?Closure $extraNonWorkingDays = null;
+
     /**
      * Fixed-date national holidays (month-day).
      */
@@ -73,7 +79,26 @@ final class BusinessDays
     {
         return ! $date->isWeekend()
             && ! in_array($date->format('m-d'), self::FIXED_HOLIDAYS, true)
-            && ! in_array($date->format('Y-m-d'), self::holyWeek($date->year), true);
+            && ! in_array($date->format('Y-m-d'), self::holyWeek($date->year), true)
+            && ! in_array($date->format('Y-m-d'), self::extraNonWorkingDays(), true);
+    }
+
+    /**
+     * Source of the non-working days decreed each year (registered in the panel), set by the application.
+     *
+     * @param  (Closure(): list<string>)|null  $resolver  Dates as Y-m-d.
+     */
+    public static function resolveExtraNonWorkingDaysUsing(?Closure $resolver): void
+    {
+        self::$extraNonWorkingDays = $resolver;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function extraNonWorkingDays(): array
+    {
+        return self::$extraNonWorkingDays ? (self::$extraNonWorkingDays)() : [];
     }
 
     /**

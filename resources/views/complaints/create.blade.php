@@ -234,8 +234,8 @@
                     <x-heroicon-o-eye class="size-5 shrink-0 text-brand-600" />
                     <span class="text-sm"><span class="block font-semibold text-slate-900">Acceso a la información pública</span><span class="text-slate-600">Se tramita conforme a la Ley de Transparencia.</span></span>
                 </a>
-                @if (! empty($settings['mesa_partes_url']))
-                    <a href="{{ $settings['mesa_partes_url'] }}" target="_blank" rel="noopener" class="flex items-start gap-3 rounded-lg p-2 hover:bg-brand-50">
+                @if ($mesaPartesUrl = \App\Support\MesaPartes\MesaPartesConfig::accessUrl())
+                    <a href="{{ $mesaPartesUrl }}" @unless (\App\Support\MesaPartes\MesaPartesConfig::enabled()) target="_blank" rel="noopener" @endunless class="flex items-start gap-3 rounded-lg p-2 hover:bg-brand-50">
                         <x-heroicon-o-inbox-arrow-down class="size-5 shrink-0 text-brand-600" />
                         <span class="text-sm"><span class="block font-semibold text-slate-900">Trámites, quejas por defecto de tramitación y denuncias</span><span class="text-slate-600">Presente su escrito por mesa de partes.</span></span>
                     </a>

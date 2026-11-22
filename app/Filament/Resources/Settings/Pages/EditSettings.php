@@ -272,7 +272,7 @@ class EditSettings extends Page
      */
     private function settings(): Collection
     {
-        return once(fn (): Collection => Setting::query()->orderBy('sort_order')->orderBy('id')->get()->keyBy('key'));
+        return once(fn (): Collection => Setting::query()->where('group', '!=', 'mesa_partes')->orderBy('sort_order')->orderBy('id')->get()->keyBy('key'));
     }
 
     /**
@@ -280,7 +280,7 @@ class EditSettings extends Page
      */
     private function storedValues(): array
     {
-        return Setting::query()->pluck('value', 'key')->all();
+        return Setting::query()->where('group', '!=', 'mesa_partes')->pluck('value', 'key')->all();
     }
 
     /**

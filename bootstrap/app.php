@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureCitizenIsActive;
+use App\Http\Middleware\EnsureMesaPartesIsEnabled;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,6 +16,17 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeaders::class);
+
+        // Citizens of the Mesa de Partes sign in on their own page; everyone else on the panel's.
+        $middleware->redirectGuestsTo(fn (Request $request): string => $request->is('mesa-de-partes', 'mesa-de-partes/*')
+            ? route('mesa-partes.login')
+            : route('filament.admin.auth.login'));
+        $middleware->redirectUsersTo(fn (): string => route('mesa-partes.account'));
+
+        $middleware->alias([
+            'mesa-partes.enabled' => EnsureMesaPartesIsEnabled::class,
+            'mesa-partes.active' => EnsureCitizenIsActive::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

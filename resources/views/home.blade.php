@@ -146,8 +146,8 @@
             ['Transparencia', 'Información pública de la entidad', route('transparency'), 'heroicon-o-eye'],
             ['Libro de reclamaciones', 'Registre su reclamo en línea', route('complaints.create'), 'heroicon-o-book-open'],
             ['Consultas y sugerencias', 'Escríbanos, le respondemos', route('contact.create'), 'heroicon-o-chat-bubble-left-right'],
-            ! empty($settings['mesa_partes_url'])
-                ? ['Mesa de partes', 'Presente sus documentos en línea', $settings['mesa_partes_url'], 'heroicon-o-inbox-arrow-down']
+            ($mesaPartesUrl = \App\Support\MesaPartes\MesaPartesConfig::accessUrl())
+                ? ['Mesa de partes', 'Presente sus documentos en línea', $mesaPartesUrl, 'heroicon-o-inbox-arrow-down']
                 : ['Agencias agrarias', 'Atención en provincias', route('agencies.index'), 'heroicon-o-map-pin'],
         ]));
     @endphp

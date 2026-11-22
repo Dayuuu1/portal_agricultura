@@ -6,6 +6,7 @@ use App\Enums\DocumentSection;
 use App\Enums\JobPostingStatus;
 use App\Models\Agency;
 use App\Models\Category;
+use App\Models\Citizen;
 use App\Models\Document;
 use App\Models\DocumentType;
 use App\Models\JobPosting;
@@ -48,16 +49,21 @@ class PublicSiteTest extends TestCase
         $this->get($uri)->assertOk();
     }
 
-    public function test_header_offers_login_to_visitors_and_the_panel_to_signed_in_users(): void
+    public function test_header_offers_staff_access_to_visitors_the_account_to_citizens_and_the_panel_to_staff(): void
     {
         $this->get('/')
-            ->assertSee('Iniciar sesión')
-            ->assertSee(route('filament.admin.auth.login'), false);
+            ->assertSee('Acceso institucional')
+            ->assertSee(route('filament.admin.auth.login'), false)
+            ->assertDontSee('Panel de administración');
 
-        $this->actingAs(User::factory()->admin()->create())
+        $this->actingAs(Citizen::factory()->create(), 'citizen')
             ->get('/')
-            ->assertSee('Panel de administración')
-            ->assertDontSee('Iniciar sesión');
+            ->assertSee(['Mis trámites', route('mesa-partes.account')])
+            ->assertDontSee('Panel de administración');
+
+        $this->actingAs(User::factory()->admin()->create(), 'web')
+            ->get('/')
+            ->assertSee('Panel de administración');
     }
 
     public function test_every_page_offers_the_accessibility_toolbar(): void

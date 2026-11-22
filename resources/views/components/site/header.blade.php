@@ -54,6 +54,11 @@
                         <x-heroicon-o-envelope class="size-3.5" /> {{ $settings['email'] }}
                     </a>
                 @endif
+                @if (\App\Support\MesaPartes\MesaPartesConfig::enabled())
+                    <a href="{{ route('mesa-partes.index') }}" class="hidden items-center gap-1.5 hover:text-white sm:flex">
+                        <x-heroicon-o-inbox-arrow-down class="size-3.5" /> Mesa de partes
+                    </a>
+                @endif
                 <a href="{{ route('complaints.create') }}" class="hidden items-center gap-1.5 hover:text-white sm:flex">
                     <x-heroicon-o-book-open class="size-3.5" /> Libro de reclamaciones
                 </a>
@@ -74,15 +79,21 @@
                         <x-heroicon-o-computer-desktop class="size-3.5" /> SIGAWEB
                     </a>
                 @endif
-                @auth
+                {{-- Staff of the panel and citizens of the Mesa de Partes have separate sessions. --}}
+                @auth('web')
                     <a href="{{ route('filament.admin.pages.dashboard') }}" class="flex items-center gap-1.5 rounded-md bg-gold-400 px-2.5 py-1 font-semibold text-brand-950 hover:bg-gold-300">
                         <x-heroicon-o-squares-2x2 class="size-3.5" />
                         <span class="hidden sm:inline">Panel de administración</span><span class="sm:hidden">Panel</span>
                     </a>
+                @elseauth('citizen')
+                    <a href="{{ route('mesa-partes.account') }}" class="flex items-center gap-1.5 rounded-md bg-gold-400 px-2.5 py-1 font-semibold text-brand-950 hover:bg-gold-300">
+                        <x-heroicon-o-folder-open class="size-3.5" />
+                        <span>Mis trámites</span>
+                    </a>
                 @else
                     <a href="{{ route('filament.admin.auth.login') }}" class="flex items-center gap-1.5 rounded-md bg-white/10 px-2.5 py-1 font-semibold text-white ring-1 ring-white/20 hover:bg-white/20">
                         <x-heroicon-o-user-circle class="size-3.5" />
-                        <span class="hidden sm:inline">Iniciar sesión</span><span class="sm:hidden">Ingresar</span>
+                        <span class="hidden sm:inline">Acceso institucional</span><span class="sm:hidden">Personal</span>
                     </a>
                 @endauth
             </div>
@@ -301,10 +312,12 @@
                 @if (! empty($settings['email']))
                     <p class="flex items-center gap-2"><x-heroicon-o-envelope class="size-4 text-brand-600" /> {{ $settings['email'] }}</p>
                 @endif
-                @auth
+                @auth('web')
                     <a href="{{ route('filament.admin.pages.dashboard') }}" class="btn-primary mt-3 w-full"><x-heroicon-o-squares-2x2 class="size-5" /> Panel de administración</a>
+                @elseauth('citizen')
+                    <a href="{{ route('mesa-partes.account') }}" class="btn-primary mt-3 w-full"><x-heroicon-o-folder-open class="size-5" /> Mis trámites</a>
                 @else
-                    <a href="{{ route('filament.admin.auth.login') }}" class="btn-secondary mt-3 w-full"><x-heroicon-o-user-circle class="size-5" /> Iniciar sesión</a>
+                    <a href="{{ route('filament.admin.auth.login') }}" class="btn-secondary mt-3 w-full"><x-heroicon-o-user-circle class="size-5" /> Acceso institucional</a>
                 @endauth
             </div>
         </div>

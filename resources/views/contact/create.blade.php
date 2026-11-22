@@ -96,8 +96,8 @@
 
             <div class="card space-y-3 p-6">
                 <h2 class="font-bold text-slate-900">Otros canales</h2>
-                @if (! empty($settings['mesa_partes_url']))
-                    <a href="{{ $settings['mesa_partes_url'] }}" target="_blank" rel="noopener" class="btn-secondary w-full"><x-heroicon-o-inbox-arrow-down class="size-5" /> Mesa de partes virtual</a>
+                @if ($mesaPartesUrl = \App\Support\MesaPartes\MesaPartesConfig::accessUrl())
+                    <a href="{{ $mesaPartesUrl }}" @unless (\App\Support\MesaPartes\MesaPartesConfig::enabled()) target="_blank" rel="noopener" @endunless class="btn-secondary w-full"><x-heroicon-o-inbox-arrow-down class="size-5" /> Mesa de partes virtual</a>
                 @endif
                 <a href="{{ route('complaints.create') }}" class="btn-secondary w-full"><x-heroicon-o-book-open class="size-5" /> Libro de reclamaciones</a>
                 @foreach ($agencies as $agency)

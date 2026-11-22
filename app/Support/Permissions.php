@@ -40,6 +40,8 @@ final class Permissions
         'banners' => ['label' => 'Banners de portada', 'group' => 'Contenido', 'description' => 'Carrusel de la página de inicio.', 'actions' => self::CRUD],
         'documentos' => ['label' => 'Documentos', 'group' => 'Documentos', 'description' => 'Resoluciones, documentos de gestión y estadística. Puede limitarse a ciertos tipos de documento.', 'actions' => self::CRUD_PUBLISH],
         'tipos_documento' => ['label' => 'Tipos de documento', 'group' => 'Documentos', 'description' => 'Categorías de documentos y su sección en el portal.', 'actions' => self::CRUD],
+        'mesa_partes' => ['label' => 'Mesa de partes: expedientes', 'group' => 'Mesa de partes', 'description' => 'Documentos recibidos por la Mesa de Partes Virtual y sus administrados. «Editar» permite observar, derivar, responder, archivar y suspender cuentas.', 'actions' => [self::VIEW, self::UPDATE]],
+        'mesa_partes_config' => ['label' => 'Mesa de partes: configuración', 'group' => 'Mesa de partes', 'description' => 'Horario, plazos, tipos de trámite y días no laborables de la Mesa de Partes Virtual.', 'actions' => self::CRUD],
         'convocatorias' => ['label' => 'Convocatorias', 'group' => 'Convocatorias', 'description' => 'Procesos CAS, bases y resultados.', 'actions' => self::CRUD_PUBLISH],
         'unidades' => ['label' => 'Unidades orgánicas', 'group' => 'Institucional', 'description' => 'Organigrama y directorio.', 'actions' => self::CRUD],
         'agencias' => ['label' => 'Agencias agrarias', 'group' => 'Institucional', 'description' => 'Sedes en provincias.', 'actions' => self::CRUD],
