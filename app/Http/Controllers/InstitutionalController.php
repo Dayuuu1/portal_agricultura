@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Agency;
 use App\Models\Document;
 use App\Models\OrganizationalUnit;
 use App\Models\Page;
+use App\Support\OrganizationalUnits\OrganizationChart;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 class InstitutionalController extends Controller
@@ -24,10 +27,16 @@ class InstitutionalController extends Controller
 
     public function organizationChart(): View
     {
+        $roots = OrganizationalUnit::query()->active()->whereNull('parent_id')
+            ->with(['children' => fn ($query) => $query->active()->with(['children' => fn ($inner) => $inner->active()])])
+            ->orderBy('sort_order')->get();
+
+        // The agrarian agencies are the deconcentrated bodies of the main head.
+        $agencies = Agency::query()->active()->orderBy('sort_order')->get();
+
         return view('institutional.organization-chart', [
-            'roots' => OrganizationalUnit::query()->active()->whereNull('parent_id')
-                ->with(['children' => fn ($query) => $query->active()->with(['children' => fn ($inner) => $inner->active()])])
-                ->orderBy('sort_order')->get(),
+            'charts' => $roots->map(fn (OrganizationalUnit $root, int $index): OrganizationChart => OrganizationChart::for($root, $index === 0 ? $agencies : null)),
+            'updatedAt' => ($lastChange = OrganizationalUnit::query()->max('updated_at')) ? Carbon::parse($lastChange) : null,
         ]);
     }
 

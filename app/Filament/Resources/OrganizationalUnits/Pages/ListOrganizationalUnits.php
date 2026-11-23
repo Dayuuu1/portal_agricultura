@@ -15,7 +15,7 @@ class ListOrganizationalUnits extends ListRecords
 
     public function getSubheading(): string
     {
-        return 'Órganos y unidades del organigrama y el directorio del portal. Mantenga al día a los responsables y sus datos de contacto.';
+        return 'La estructura del organigrama, en su orden. Cada fila es una ficha del portal: mantenga al día a su responsable, su foto y su contacto.';
     }
 
     protected function getHeaderActions(): array
@@ -33,6 +33,13 @@ class ListOrganizationalUnits extends ListRecords
                 ->modifyQueryUsing(fn (Builder $query) => $query->whereNull('head_name'))
                 ->badge(OrganizationalUnit::query()->whereNull('head_name')->count())
                 ->badgeColor('warning'),
+            'ficha-incompleta' => Tab::make('Ficha incompleta')
+                ->modifyQueryUsing(fn (Builder $query) => $query->withIncompleteProfile())
+                ->badge(OrganizationalUnit::query()->withIncompleteProfile()->count())
+                ->badgeColor('warning'),
+            'ocultas' => Tab::make('Ocultas')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_active', false))
+                ->badge(OrganizationalUnit::query()->where('is_active', false)->count()),
         ];
     }
 }

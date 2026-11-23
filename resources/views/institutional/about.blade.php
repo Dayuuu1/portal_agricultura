@@ -22,19 +22,18 @@
             </div>
         </section>
 
-        @if ($director)
-            <section class="card flex flex-col items-center gap-6 p-6 sm:flex-row sm:p-8">
-                <div class="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100 ring-4 ring-brand-50">
-                    @if ($director->head_photo_url)
-                        <img src="{{ $director->head_photo_url }}" alt="{{ $director->head_name }}" class="size-full object-cover">
-                    @else
-                        <x-heroicon-o-user class="size-12 text-brand-600" />
-                    @endif
-                </div>
+        @if ($director?->head_name)
+            <section class="card flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-start sm:p-8">
+                <x-person-photo :src="$director->head_photo_url" :name="$director->head_name" class="size-32 rounded-2xl text-4xl" />
                 <div class="text-center sm:text-left">
-                    <p class="eyebrow mb-1">{{ $director->head_title ?? 'Director(a) Regional' }}</p>
-                    <p class="font-display text-2xl font-extrabold text-slate-900">{{ $director->head_name ?: 'Por designar' }}</p>
-                    <p class="mt-1 text-slate-600">{{ $director->description }}</p>
+                    <p class="eyebrow mb-1">{{ $director->head_title ?: 'Director(a) Regional' }}</p>
+                    <p class="font-display text-2xl font-extrabold text-slate-900">{{ $director->head_name }}</p>
+                    @if ($director->description)
+                        <p class="mt-2 max-w-3xl text-slate-600">{{ $director->description }}</p>
+                    @endif
+                    <a href="{{ route('institutional.unit', $director) }}" class="link-draw mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-700">
+                        Funciones y contacto <x-heroicon-m-chevron-right class="size-4" />
+                    </a>
                 </div>
             </section>
         @endif

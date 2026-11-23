@@ -330,6 +330,272 @@
             animation-timeline: scroll(root);
         }
     }
+
+    /*
+     * Organigrama (institutional/organization-chart.blade.php). Cada caja lleva el color de su tipo de
+     * órgano; los conectores son bordes de pseudoelementos, así el diagrama se rehace solo cuando cambian
+     * las unidades. Línea central con el control y el asesoramiento a la izquierda, el apoyo a la derecha
+     * y los órganos de línea y desconcentrados abajo; las unidades cuelgan de su órgano.
+     */
+    .orgchart {
+        --oc-line: var(--color-brand-300);
+        --oc-stroke: 2px;
+        --oc-spine: 4.5rem;
+        --oc-drop: 2rem;
+        --oc-indent: 1.25rem;
+        --oc-gap: 1.25rem;
+        --oc-unit-gap: 0.5rem;
+        print-color-adjust: exact;
+        page: orgchart;
+    }
+
+    .oc-box {
+        --oc-accent: var(--color-slate-300);
+        --oc-cap: 3px;
+        @apply relative block rounded-xl bg-white px-4 py-3 text-left text-sm text-slate-700 shadow-[0_1px_2px_rgb(14_59_37/0.06)] ring-1 ring-slate-900/10 transition-shadow duration-200 hover:shadow-lift hover:ring-brand-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600;
+        border-top: var(--oc-cap) solid var(--oc-accent);
+    }
+
+    /* Los colores de cada tipo sirven a las cajas y a la leyenda (.oc-swatch). */
+    :is(.oc-box, .oc-swatch)[data-type='control'] {
+        --oc-accent: var(--color-slate-500);
+    }
+
+    :is(.oc-box, .oc-swatch)[data-type='asesoramiento'] {
+        --oc-accent: var(--color-gold-400);
+    }
+
+    :is(.oc-box, .oc-swatch)[data-type='apoyo'] {
+        --oc-accent: var(--color-brand-500);
+    }
+
+    :is(.oc-box, .oc-swatch)[data-type='linea'] {
+        --oc-accent: var(--color-gold-400);
+        @apply bg-brand-700 ring-brand-800;
+    }
+
+    :is(.oc-box, .oc-swatch)[data-type='desconcentrado'] {
+        --oc-accent: var(--color-brand-700);
+        @apply bg-brand-50 ring-brand-300;
+    }
+
+    .oc-swatch[data-type='alta-direccion'] {
+        --oc-accent: var(--color-gold-400);
+        @apply bg-brand-900 ring-brand-950;
+    }
+
+    .oc-box[data-type='linea'] {
+        @apply text-brand-50 hover:ring-gold-300;
+    }
+
+    .oc-box[data-type='unidad'] {
+        --oc-cap: 0px;
+        @apply px-3.5 py-2.5;
+    }
+
+    .oc-swatch[data-type='unidad'] {
+        border-top-width: 0;
+    }
+
+    .oc-name {
+        @apply font-display leading-snug font-semibold text-ink;
+    }
+
+    .oc-box[data-type='unidad'] .oc-name {
+        @apply font-sans font-medium;
+    }
+
+    .oc-meta {
+        @apply text-xs text-slate-500;
+    }
+
+    .oc-acronym {
+        @apply shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 text-[0.6875rem] leading-none font-semibold tracking-wide text-slate-600;
+    }
+
+    .oc-box[data-type='linea'] :is(.oc-name) {
+        @apply text-white;
+    }
+
+    .oc-box[data-type='linea'] .oc-meta {
+        @apply text-brand-100;
+    }
+
+    .oc-box[data-type='linea'] .oc-acronym {
+        @apply bg-white/15 text-white;
+    }
+
+    .oc-swatch {
+        @apply size-3.5 shrink-0 rounded-[0.25rem] bg-white ring-1 ring-slate-900/15;
+        border-top: 3px solid var(--oc-accent, transparent);
+    }
+
+    /* Unidades bajo su órgano: un tronco vertical y un codo hacia cada caja. */
+    .oc-units {
+        margin-left: var(--oc-indent);
+    }
+
+    .oc-units > li {
+        position: relative;
+        padding-top: var(--oc-unit-gap);
+        padding-left: var(--oc-indent);
+    }
+
+    .oc-units > li:not(:last-child)::before {
+        content: '';
+        position: absolute;
+        inset-block: 0;
+        left: 0;
+        border-left: var(--oc-stroke) solid var(--oc-line);
+    }
+
+    .oc-units > li > .oc-box::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: calc(-1 * var(--oc-indent));
+        width: var(--oc-indent);
+        border-top: var(--oc-stroke) solid var(--oc-line);
+    }
+
+    .oc-units > li:last-child > .oc-box::after {
+        content: '';
+        position: absolute;
+        top: calc(-1 * var(--oc-unit-gap) - var(--oc-cap));
+        bottom: 50%;
+        left: calc(-1 * var(--oc-indent));
+        border-left: var(--oc-stroke) solid var(--oc-line);
+    }
+
+    /* Franja de los órganos de asesoramiento y apoyo, a ambos lados de la línea central. */
+    .oc-staff {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) var(--oc-spine) minmax(0, 1fr);
+        row-gap: 1.5rem;
+        padding-top: var(--oc-drop);
+    }
+
+    .oc-staff::before,
+    .oc-spine::before {
+        content: '';
+        position: absolute;
+        inset-block: 0;
+        left: 50%;
+        margin-left: calc(var(--oc-stroke) / -2);
+        border-left: var(--oc-stroke) solid var(--oc-line);
+    }
+
+    .oc-spine {
+        position: relative;
+        height: var(--oc-drop);
+    }
+
+    .oc-staff.has-bottom {
+        padding-bottom: var(--oc-drop);
+    }
+
+    .oc-side-left {
+        grid-column: 1;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .oc-side-right {
+        grid-column: 3;
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .oc-staff .oc-branch {
+        width: 100%;
+        max-width: 23rem;
+    }
+
+    .oc-side-left > .oc-branch > .oc-box::after,
+    .oc-side-right > .oc-branch > .oc-box::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: calc(var(--oc-spine) / 2);
+        border-top: var(--oc-stroke) solid var(--oc-line);
+    }
+
+    .oc-side-left > .oc-branch > .oc-box::after {
+        left: 100%;
+    }
+
+    .oc-side-right > .oc-branch > .oc-box::after {
+        right: 100%;
+    }
+
+    /* Fila inferior: una barra horizontal y una bajada hacia cada órgano. */
+    .oc-bottom {
+        display: flex;
+        justify-content: center;
+        gap: var(--oc-gap);
+    }
+
+    .oc-bottom > li {
+        position: relative;
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: 19rem;
+        padding-top: var(--oc-drop);
+    }
+
+    .oc-bottom > li::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        height: var(--oc-drop);
+        margin-left: calc(var(--oc-stroke) / -2);
+        border-left: var(--oc-stroke) solid var(--oc-line);
+    }
+
+    .oc-bottom > li::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: calc(var(--oc-gap) / -2);
+        right: calc(var(--oc-gap) / -2);
+        border-top: var(--oc-stroke) solid var(--oc-line);
+    }
+
+    .oc-bottom > li:first-child::after {
+        left: 50%;
+    }
+
+    .oc-bottom > li:last-child::after {
+        right: 50%;
+    }
+
+    .oc-bottom > li:only-child::after {
+        display: none;
+    }
+
+    /* Impreso cabe en una hoja A4 horizontal: menos aire entre cajas y todo al 70 % de su tamaño. */
+    @media print {
+        .orgchart {
+            zoom: 0.7;
+            --oc-drop: 1.25rem;
+            --oc-unit-gap: 0.25rem;
+        }
+
+        .orgchart .oc-staff {
+            row-gap: 0.75rem;
+        }
+
+        .orgchart .oc-box[data-type='unidad'] {
+            @apply py-1.5 text-xs;
+        }
+    }
+}
+
+@page orgchart {
+    size: A4 landscape;
+    margin: 10mm;
 }
 
 /* ---------------------------------------------------------------------------------------------

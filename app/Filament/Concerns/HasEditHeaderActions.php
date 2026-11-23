@@ -23,13 +23,18 @@ trait HasEditHeaderActions
                 ->url(fn (): ?string => $this->publicUrl())
                 ->openUrlInNewTab()
                 ->visible(fn (): bool => $this->publicUrl() !== null),
-            DeleteAction::make()
-                ->visible(fn (): bool => $this->canDeleteRecord()),
+            $this->configureDeleteAction(DeleteAction::make()
+                ->visible(fn (): bool => $this->canDeleteRecord())),
         ];
     }
 
     protected function canDeleteRecord(): bool
     {
         return true;
+    }
+
+    protected function configureDeleteAction(DeleteAction $action): DeleteAction
+    {
+        return $action;
     }
 }
