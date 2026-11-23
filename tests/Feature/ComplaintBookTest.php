@@ -214,4 +214,37 @@ class ComplaintBookTest extends TestCase
             ->assertSeeInHtml('Me atendieron con demora.')
             ->assertSeeInHtml('30 días hábiles');
     }
+
+    public function test_text_typed_in_the_form_never_becomes_a_link_in_the_mails(): void
+    {
+        $complaint = Complaint::factory()->create([
+            'full_name' => '[Actualice sus datos](https://sitio-falso.test)',
+            'description' => 'Revise **urgente** ![x](https://sitio-falso.test/a.png) su cuenta.',
+        ]);
+
+        foreach ([new ComplaintReceipt($complaint), new ComplaintRegistered($complaint)] as $mail) {
+            $html = $mail->render();
+
+            $this->assertStringNotContainsString('href="https://sitio-falso.test', $html);
+            $this->assertStringNotContainsString('<img src="https://sitio-falso.test', $html);
+            $this->assertStringNotContainsString('<strong>urgente</strong>', $html);
+            $this->assertStringContainsString('[Actualice sus datos](https://sitio-falso.test)', $html);
+        }
+    }
+
+    public function test_copies_to_the_same_address_are_limited_and_the_receipt_says_so(): void
+    {
+        Mail::fake();
+
+        foreach (range(1, 4) as $attempt) {
+            $response = $this->post('/libro-de-reclamaciones', $this->validClaim(['email' => 'Victima@Example.com']));
+        }
+
+        $this->assertSame(4, Complaint::query()->count());
+        Mail::assertSent(ComplaintReceipt::class, 3);
+        Mail::assertSent(ComplaintRegistered::class, 4);
+
+        // The fourth claim is saved, but its receipt does not promise a copy that was never sent.
+        $this->followRedirects($response)->assertOk()->assertSee('Su reclamo fue registrado')->assertDontSee('También enviamos una copia');
+    }
 }

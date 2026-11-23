@@ -12,6 +12,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -42,6 +43,7 @@ class Citizen extends Authenticatable implements MustVerifyEmail
             'person_type' => PersonType::class,
             'document_type' => IdentityDocumentType::class,
             'email_verified_at' => 'datetime',
+            'identity_verified_at' => 'datetime',
             'privacy_accepted_at' => 'datetime',
             'truthfulness_declared_at' => 'datetime',
             'e_notifications_authorized_at' => 'datetime',
@@ -49,6 +51,34 @@ class Citizen extends Authenticatable implements MustVerifyEmail
             'is_active' => 'boolean',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Staff member who checked that the document belongs to the person behind the account.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function identityVerifier(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'identity_verified_by');
+    }
+
+    /**
+     * The staff checked the identity document. Until then the account rests only on what the person declared.
+     */
+    public function hasVerifiedIdentity(): bool
+    {
+        return $this->identity_verified_at !== null;
+    }
+
+    public function markIdentityAsVerified(User $verifier): void
+    {
+        $this->forceFill(['identity_verified_at' => now(), 'identity_verified_by' => $verifier->id])->save();
+    }
+
+    public function clearIdentityVerification(): void
+    {
+        $this->forceFill(['identity_verified_at' => null, 'identity_verified_by' => null])->save();
     }
 
     /**
@@ -100,9 +130,12 @@ class Citizen extends Authenticatable implements MustVerifyEmail
         $this->notify(new ResetCitizenPassword($token));
     }
 
+    /**
+     * Only the name: the document number is personal data and the history is readable by more people.
+     */
     public function activityLogLabel(): string
     {
-        return $this->fullName().' ('.$this->documentLabel().')';
+        return $this->fullName();
     }
 
     /**
@@ -111,5 +144,18 @@ class Citizen extends Authenticatable implements MustVerifyEmail
     protected function activityLogExcluded(): array
     {
         return ['password', 'remember_token', 'last_login_at'];
+    }
+
+    /**
+     * Personal data (Ley N° 29733) stays in the account; the history only records that it changed.
+     *
+     * @return list<string>
+     */
+    protected function activityLogMasked(): array
+    {
+        return [
+            'document_number', 'first_name', 'last_name', 'business_name', 'representative_name', 'representative_document_number',
+            'email', 'phone', 'department', 'province', 'district', 'address',
+        ];
     }
 }

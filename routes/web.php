@@ -50,10 +50,10 @@ Route::get('/informacion-agraria', AgrarianInformationController::class)->name('
 Route::get('/transparencia', TransparencyController::class)->name('transparency');
 
 Route::get('/contacto', [ContactController::class, 'create'])->name('contact.create');
-Route::post('/contacto', [ContactController::class, 'store'])->middleware('throttle:5,1')->name('contact.store');
+Route::post('/contacto', [ContactController::class, 'store'])->middleware('throttle:contact')->name('contact.store');
 
 Route::get('/libro-de-reclamaciones', [ComplaintController::class, 'create'])->name('complaints.create');
-Route::post('/libro-de-reclamaciones', [ComplaintController::class, 'store'])->middleware('throttle:5,1')->name('complaints.store');
+Route::post('/libro-de-reclamaciones', [ComplaintController::class, 'store'])->middleware('throttle:complaints')->name('complaints.store');
 Route::get('/libro-de-reclamaciones/constancia/{complaint:code}', [ComplaintController::class, 'receipt'])->middleware('signed')->name('complaints.receipt');
 
 /*
@@ -61,22 +61,23 @@ Route::get('/libro-de-reclamaciones/constancia/{complaint:code}', [ComplaintCont
 */
 Route::prefix('mesa-de-partes')->name('mesa-partes.')->group(function () {
     Route::get('/', [MesaPartesController::class, 'index'])->name('index');
-    Route::get('/consulta', [MesaPartesController::class, 'lookup'])->middleware('throttle:20,1')->name('lookup');
+    Route::get('/consulta', [MesaPartesController::class, 'lookup'])->middleware('throttle:mesa-partes-lookup')->name('lookup');
 
     Route::middleware('guest:citizen')->group(function () {
         Route::middleware('mesa-partes.enabled')->group(function () {
             Route::get('/registro', [RegisterController::class, 'create'])->name('register');
-            Route::post('/registro', [RegisterController::class, 'store'])->middleware('throttle:5,1')->name('register.store');
+            Route::post('/registro', [RegisterController::class, 'store'])->middleware('throttle:mesa-partes-register')->name('register.store');
         });
         Route::get('/ingresar', [LoginController::class, 'create'])->name('login');
-        Route::post('/ingresar', [LoginController::class, 'store'])->middleware('throttle:10,1')->name('login.store');
+        Route::post('/ingresar', [LoginController::class, 'store'])->middleware('throttle:mesa-partes-login')->name('login.store');
         Route::get('/recuperar-contrasena', [PasswordResetController::class, 'request'])->name('password.request');
-        Route::post('/recuperar-contrasena', [PasswordResetController::class, 'email'])->middleware('throttle:5,1')->name('password.email');
+        Route::post('/recuperar-contrasena', [PasswordResetController::class, 'email'])->middleware('throttle:mesa-partes-password')->name('password.email');
         Route::get('/restablecer-contrasena/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');
-        Route::post('/restablecer-contrasena', [PasswordResetController::class, 'update'])->middleware('throttle:5,1')->name('password.update');
+        Route::post('/restablecer-contrasena', [PasswordResetController::class, 'update'])->middleware('throttle:mesa-partes-password')->name('password.update');
     });
 
-    Route::middleware(['auth:citizen', 'mesa-partes.active'])->group(function () {
+    // «auth.session» ends the other sessions of a citizen as soon as the password changes.
+    Route::middleware(['auth:citizen', 'auth.session', 'mesa-partes.active'])->group(function () {
         Route::post('/salir', [LoginController::class, 'destroy'])->name('logout');
         Route::get('/verificar-correo', [VerificationController::class, 'notice'])->name('verification.notice');
         Route::get('/verificar-correo/{id}/{hash}', [VerificationController::class, 'verify'])->middleware(['signed', 'throttle:6,1'])->name('verification.verify');

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Submissions;
 
 use App\Enums\SubmissionStatus;
 use App\Filament\Concerns\HasSpanishLabels;
+use App\Filament\Resources\Citizens\CitizenResource;
 use App\Filament\Resources\Submissions\Pages\ListSubmissions;
 use App\Filament\Resources\Submissions\Pages\ViewSubmission;
 use App\Models\Submission;
@@ -218,6 +219,14 @@ class SubmissionResource extends Resource
                             TextEntry::make('citizen.name')->label(fn (Submission $record): string => $record->citizen->person_type->getLabel())
                                 ->state(fn (Submission $record): string => $record->citizen->fullName())->weight('semibold'),
                             TextEntry::make('citizen.document')->label('Documento')->state(fn (Submission $record): string => $record->citizen->documentLabel()),
+                            TextEntry::make('citizen.identity')->label('Identidad')
+                                ->state(fn (Submission $record): string => $record->citizen->hasVerifiedIdentity() ? 'Verificada' : 'Sin verificar')
+                                ->badge()
+                                ->color(fn (Submission $record): string => $record->citizen->hasVerifiedIdentity() ? 'success' : 'warning')
+                                ->helperText(fn (Submission $record): ?string => $record->citizen->hasVerifiedIdentity()
+                                    ? null
+                                    : 'Nadie comprobó aún que el documento pertenece a quien presenta. Hágalo antes de admitir su primer escrito y márquelo en la ficha del administrado.')
+                                ->url(fn (Submission $record): ?string => auth()->user()?->can('view', $record->citizen) ? CitizenResource::getUrl('view', ['record' => $record->citizen]) : null),
                             TextEntry::make('citizen.representative_name')->label('Representante legal')->visible(fn (Submission $record): bool => filled($record->citizen->representative_name)),
                             TextEntry::make('citizen.email')->label('Correo')->copyable(),
                             TextEntry::make('citizen.phone')->label('Celular'),

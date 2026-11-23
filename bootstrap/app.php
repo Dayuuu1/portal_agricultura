@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeaders::class);
 
+        // Outside local development, only requests for the domain of APP_URL (and its subdomains) are answered.
+        // Proxies in front of the site are listed in TRUSTED_PROXIES (config/trustedproxy.php).
+        $middleware->trustHosts();
+
         // Citizens of the Mesa de Partes sign in on their own page; everyone else on the panel's.
         $middleware->redirectGuestsTo(fn (Request $request): string => $request->is('mesa-de-partes', 'mesa-de-partes/*')
             ? route('mesa-partes.login')

@@ -1,7 +1,9 @@
 /**
- * Banner principal de la portada. Avanza solo cada `interval` ms mientras nadie lo está usando;
- * la barra de la pestaña activa muestra cuánto falta. Se queda quieto con «prefers-reduced-motion»,
- * con «Detener animaciones» o cuando el visitante lo pausa.
+ * Banner principal de la portada. Avanza solo cada `interval` ms; la barra de la pestaña activa muestra
+ * cuánto falta. Espera mientras el puntero está sobre un botón del banner o sobre los controles (un cambio
+ * en ese momento haría pulsar otro enlace) y mientras se recorre con el teclado. El banner ocupa casi toda
+ * la primera pantalla, así que el puntero apoyado sobre la foto o el titular no lo detiene.
+ * Se queda quieto con «prefers-reduced-motion», con «Detener animaciones» o cuando el visitante lo pausa.
  */
 export default function heroCarousel(total, interval = 7000) {
     return {
@@ -9,6 +11,7 @@ export default function heroCarousel(total, interval = 7000) {
         total,
         paused: false,
         hovering: false,
+        focused: false,
         progress: 0,
         lastFrame: null,
         frame: null,
@@ -36,7 +39,18 @@ export default function heroCarousel(total, interval = 7000) {
         },
 
         playing() {
-            return this.autoplays() && ! this.paused && ! this.hovering && document.visibilityState === 'visible';
+            return this.autoplays() && ! this.paused && ! this.hovering && ! this.focused && document.visibilityState === 'visible';
+        },
+
+        /** Keyboard focus only: a mouse click also focuses the button, and must not stop the carousel for good. */
+        focusEntered(event) {
+            this.focused = event.target instanceof Element && event.target.matches(':focus-visible');
+        },
+
+        focusLeft(event) {
+            if (! this.$root.contains(event.relatedTarget)) {
+                this.focused = false;
+            }
         },
 
         tick(now) {

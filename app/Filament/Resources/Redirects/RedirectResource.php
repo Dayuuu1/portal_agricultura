@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Redirects;
 use App\Filament\Concerns\HasSpanishLabels;
 use App\Filament\Resources\Redirects\Pages\ManageRedirects;
 use App\Models\Redirect;
+use App\Rules\SafeLink;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -55,7 +56,8 @@ class RedirectResource extends Resource
                     ->label('Dirección nueva')
                     ->helperText('Ruta interna (/noticias/…) o dirección completa (https://…).')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->rule(new SafeLink),
             ]);
     }
 
@@ -66,7 +68,7 @@ class RedirectResource extends Resource
             ->columns([
                 TextColumn::make('old_path')->label('Antigua')->searchable()->limit(60)->copyable(),
                 TextColumn::make('new_path')->label('Nueva')->searchable()->limit(60)->color('gray')
-                    ->url(fn (Redirect $record): string => $record->new_path, shouldOpenInNewTab: true),
+                    ->url(fn (Redirect $record): ?string => SafeLink::isSafe($record->new_path) ? $record->new_path : null, shouldOpenInNewTab: true),
                 TextColumn::make('hits')->label('Visitas')->numeric()->sortable(),
                 TextColumn::make('last_hit_at')->label('Última visita')->since()->placeholder('Nunca')->sortable(),
             ])

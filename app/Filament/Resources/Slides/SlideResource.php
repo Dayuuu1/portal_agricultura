@@ -7,6 +7,7 @@ use App\Filament\Concerns\HasSpanishLabels;
 use App\Filament\Resources\Slides\Pages\ManageSlides;
 use App\Models\Setting;
 use App\Models\Slide;
+use App\Rules\SafeLink;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -115,6 +116,7 @@ class SlideResource extends Resource
                                 ->placeholder('/convocatorias')
                                 ->helperText('Ruta interna (/convocatorias) o dirección completa (https://…). Sin enlace no se muestra el botón.')
                                 ->maxLength(255)
+                                ->rule(new SafeLink)
                                 ->live(onBlur: true),
                         ]),
                     Section::make('Publicación')

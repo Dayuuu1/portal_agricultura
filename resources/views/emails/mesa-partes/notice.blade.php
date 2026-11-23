@@ -1,9 +1,9 @@
 <x-mail::message>
 # {{ $notification->title }}
 
-Estimado(a) {{ $notification->citizen->fullName() }}:
+Estimado(a) {{ \App\Support\MarkdownText::escape($notification->citizen->fullName()) }}:
 
-{!! nl2br(e($notification->body)) !!}
+{!! nl2br(e(\App\Support\MarkdownText::escape($notification->body))) !!}
 
 <x-mail::button :url="route('mesa-partes.notifications.show', $notification)">
 Ver en mi cuenta

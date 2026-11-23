@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\BannerOverlay;
 use App\Models\Concerns\LogsActivity;
+use App\Rules\SafeLink;
 use Database\Factories\SlideFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -73,5 +74,14 @@ class Slide extends Model
         return Attribute::get(fn (): ?string => $this->background_image
             ? Storage::disk('public')->url($this->background_image)
             : null);
+    }
+
+    /**
+     * Address of the button, or null when there is none or it is not a portal path or web address
+     * (values saved before the form checked them are never printed in an href).
+     */
+    public function buttonLink(): ?string
+    {
+        return SafeLink::isSafe($this->button_url) ? $this->button_url : null;
     }
 }

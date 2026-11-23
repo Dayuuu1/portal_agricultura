@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Models\Concerns\LogsActivity;
 use Database\Factories\SettingFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
@@ -17,6 +19,16 @@ class Setting extends Model
     use HasFactory, LogsActivity;
 
     public const CACHE_KEY = 'portal.settings';
+
+    /**
+     * Mail server and panel access, edited only by administrators in «Correo y acceso».
+     */
+    public const SYSTEM_GROUP = 'sistema';
+
+    /**
+     * Groups with a page of their own, kept out of «Datos del portal».
+     */
+    public const DEDICATED_GROUPS = ['mesa_partes', self::SYSTEM_GROUP];
 
     /**
      * Images bundled with the site, used while the entity has not uploaded its own.
@@ -44,15 +56,37 @@ class Setting extends Model
         static::saved(fn () => Cache::forget(self::CACHE_KEY));
         static::deleted(fn () => Cache::forget(self::CACHE_KEY));
 
-        // A replaced logo or icon is no longer referenced anywhere, so its file is removed.
+        // A replaced logo or icon is no longer referenced anywhere, so its file is removed. Only a file directly
+        // inside the logo folder qualifies, so a tampered value can never point the deletion somewhere else.
         static::updated(function (Setting $setting): void {
             $previous = $setting->getRawOriginal('value');
 
             if ($setting->type === 'image' && $setting->wasChanged('value') && is_string($previous)
-                && str_starts_with($previous, self::IMAGE_DIRECTORY.'/')) {
+                && preg_match('#^'.preg_quote(self::IMAGE_DIRECTORY, '#').'/[A-Za-z0-9_-]+\.(png|webp|jpe?g)$#', $previous) === 1) {
                 Storage::disk('public')->delete($previous);
             }
         });
+    }
+
+    /**
+     * Values shown in «Datos del portal»: everything except the groups that have their own page.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function portalData(Builder $query): void
+    {
+        $query->whereNotIn('group', self::DEDICATED_GROUPS);
+    }
+
+    /**
+     * A secret (the SMTP password) is stored encrypted and its history only says that it changed.
+     *
+     * @return list<string>
+     */
+    protected function activityLogMasked(): array
+    {
+        return $this->type === 'secret' ? ['value'] : [];
     }
 
     /**

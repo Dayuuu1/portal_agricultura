@@ -272,7 +272,7 @@ class EditSettings extends Page
      */
     private function settings(): Collection
     {
-        return once(fn (): Collection => Setting::query()->where('group', '!=', 'mesa_partes')->orderBy('sort_order')->orderBy('id')->get()->keyBy('key'));
+        return once(fn (): Collection => Setting::query()->portalData()->orderBy('sort_order')->orderBy('id')->get()->keyBy('key'));
     }
 
     /**
@@ -280,7 +280,7 @@ class EditSettings extends Page
      */
     private function storedValues(): array
     {
-        return Setting::query()->where('group', '!=', 'mesa_partes')->pluck('value', 'key')->all();
+        return Setting::query()->portalData()->pluck('value', 'key')->all();
     }
 
     /**
@@ -349,6 +349,8 @@ class EditSettings extends Page
                 ->directory(Setting::IMAGE_DIRECTORY)
                 ->visibility('public')
                 ->imagePreviewHeight('110')
+                // This page has no record to compare with, so the stored file is the only path accepted back.
+                ->preventFilePathTampering(allowFilePathUsing: fn (string $file): bool => $file === $setting->value)
                 ->live(),
             'textarea' => Textarea::make($key)
                 ->label($label)

@@ -25,6 +25,7 @@ class SecurityHeaders
             'Referrer-Policy' => 'strict-origin-when-cross-origin',
             'Permissions-Policy' => 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
             'Cross-Origin-Opener-Policy' => 'same-origin',
+            'Content-Security-Policy' => $this->contentSecurityPolicy(),
         ];
 
         if ($request->isSecure()) {
@@ -38,5 +39,33 @@ class SecurityHeaders
         }
 
         return $response;
+    }
+
+    /**
+     * Second line of defence if some HTML slipped through: no <base> rewriting every link, no forms posting to
+     * another site, no plugins other than the PDF previews of the portal's own files, no framing by others.
+     * Scripts and styles are not restricted, because the panel (Livewire and Alpine) needs inline code.
+     */
+    private function contentSecurityPolicy(): string
+    {
+        $storageOrigin = $this->originOf((string) config('filesystems.disks.public.url'));
+
+        return implode('; ', [
+            "base-uri 'self'",
+            "form-action 'self'",
+            "frame-ancestors 'self'",
+            trim("object-src 'self' ".$storageOrigin),
+        ]);
+    }
+
+    private function originOf(string $url): string
+    {
+        $parts = parse_url($url);
+
+        if (! isset($parts['scheme'], $parts['host'])) {
+            return '';
+        }
+
+        return $parts['scheme'].'://'.$parts['host'].(isset($parts['port']) ? ':'.$parts['port'] : '');
     }
 }

@@ -11,7 +11,7 @@
                     <h1 class="text-xl font-extrabold text-brand-950">Su reclamo fue registrado</h1>
                     <p class="text-sm text-brand-900">
                         Guarde o imprima esta constancia.
-                        @if (filled($complaint->email))
+                        @if (session('complaint_copy_sent'))
                             También enviamos una copia a <strong>{{ $complaint->email }}</strong>.
                         @endif
                     </p>

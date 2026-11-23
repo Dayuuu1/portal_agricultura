@@ -2,7 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\RequestPasswordReset;
 use App\Filament\Resources\ActivityLogs\ActivityLogResource;
+use App\Http\Middleware\RequireMultiFactorAuthenticationByPolicy;
 use App\Models\Setting;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -45,14 +47,17 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
-            ->passwordReset()
+            // Same answer for any address, so the form does not reveal who has a panel account.
+            ->passwordReset(RequestPasswordReset::class)
             ->profile(isSimple: false)
             ->multiFactorAuthentication([
                 AppAuthentication::make()
                     ->recoverable()
                     // Name shown in the authenticator app; read while the panel is built, when the settings table may not exist yet (fresh installs).
                     ->brandName(rescue(fn (): string => Setting::shortName(), 'Dirección Regional Agraria', report: false)),
-            ])
+            ], isRequired: true)
+            // «Required» only registers the setup step; who must go through it is chosen in «Correo y acceso».
+            ->multiFactorAuthenticationRequiredMiddlewareName(RequireMultiFactorAuthenticationByPolicy::class)
             // Name and images come from «Datos del portal», so the entity can change them without touching the code.
             ->brandName(fn (): string => Setting::shortName().' · Administración')
             ->brandLogo(fn (): View => view('filament.brand'))
@@ -110,8 +115,9 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            // Persistent: every Livewire request is checked too, so a deactivated account stops working at its next click.
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ], isPersistent: true);
     }
 }

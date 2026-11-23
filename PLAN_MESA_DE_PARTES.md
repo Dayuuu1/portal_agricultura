@@ -334,7 +334,7 @@ Encendido o apagado del servicio; horario de atención; norma que aprueba el ser
 ### 13.3 Antes de encender el servicio
 
 1. Aprobar el servicio con resolución o directiva (11.1) y registrar su número en la configuración.
-2. Configurar el SMTP institucional en `.env` (11.5). Hoy `MAIL_MAILER=log`, así que no sale ningún correo. Los correos se envían al momento, sin cola. Si uno falla, el error queda en el log y la notificación sigue disponible en la casilla del ciudadano.
+2. Configurar el SMTP institucional (11.5) en **Configuración › Correo y acceso**, enviar el correo de prueba y activarlo. Esa página reemplaza los valores de `.env`, guarda la contraseña cifrada y solo la ven los administradores. Mientras no se active, sigue `MAIL_MAILER=log` y no sale ningún correo. Los correos se envían al momento, sin cola. Si uno falla, el error queda en el log y la notificación sigue disponible en la casilla del ciudadano.
 3. Crear en el panel el rol «Mesa de partes» y asignarlo al personal. El seeder solo lo crea en instalaciones nuevas.
 4. Revisar los tipos de trámite base y registrar los días no laborables del año.
 5. Hacer una prueba completa en un entorno de pruebas con correo real.
@@ -342,6 +342,6 @@ Encendido o apagado del servicio; horario de atención; norma que aprueba el ser
 
 ### 13.4 Límites conocidos
 
-- No hay firma digital ni validación con RENIEC (11.4 y 11.8). El escrito se presenta escaneado y firmado, con declaración jurada de veracidad.
+- No hay firma digital ni validación con RENIEC (11.4 y 11.8). El escrito se presenta escaneado y firmado, con declaración jurada de veracidad. Mientras tanto, el personal comprueba el documento y marca la cuenta con «Marcar identidad como verificada» en la ficha del administrado; cada expediente muestra si la identidad está verificada.
 - Sin un SGD, la atención interna se registra a mano: derivación a una oficina, respuesta y archivo. Las oficinas no tienen todavía una bandeja propia (fase 2).
 - Los días no laborables registrados afectan también el cómputo de plazos del Libro de Reclamaciones.

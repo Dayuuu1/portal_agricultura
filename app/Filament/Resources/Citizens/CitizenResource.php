@@ -66,6 +66,13 @@ class CitizenResource extends Resource
                         TextEntry::make('name')->label(fn (Citizen $record): string => $record->person_type->getLabel())
                             ->state(fn (Citizen $record): string => $record->fullName())->weight('semibold'),
                         TextEntry::make('document')->label('Documento')->state(fn (Citizen $record): string => $record->documentLabel()),
+                        TextEntry::make('identity_verified_at')->label('Identidad')
+                            ->state(fn (Citizen $record): string => $record->hasVerifiedIdentity() ? 'Verificada' : 'Sin verificar')
+                            ->badge()
+                            ->color(fn (Citizen $record): string => $record->hasVerifiedIdentity() ? 'success' : 'warning')
+                            ->helperText(fn (Citizen $record): string => $record->hasVerifiedIdentity()
+                                ? 'Por '.($record->identityVerifier?->name ?? 'un usuario que ya no existe').' el '.$record->identity_verified_at->format('d/m/Y H:i').'.'
+                                : 'Nadie comprobó todavía que el documento pertenece a quien abrió la cuenta.'),
                         TextEntry::make('representative_name')->label('Representante legal')
                             ->state(fn (Citizen $record): string => $record->representative_name.' ('.$record->representative_document_number.')')
                             ->visible(fn (Citizen $record): bool => $record->person_type === PersonType::Juridica),
@@ -121,12 +128,16 @@ class CitizenResource extends Resource
                 IconColumn::make('e_notifications_authorized_at')->label('Notif. electrónica')->boolean()
                     ->state(fn (Citizen $record): bool => $record->acceptsElectronicNotifications())->alignCenter(),
                 TextColumn::make('submissions_count')->label('Expedientes')->counts('submissions')->badge()->color('gray')->alignCenter(),
+                IconColumn::make('identity_verified_at')->label('Identidad')->boolean()
+                    ->state(fn (Citizen $record): bool => $record->hasVerifiedIdentity())
+                    ->tooltip(fn (Citizen $record): string => $record->hasVerifiedIdentity() ? 'Identidad verificada' : 'Identidad sin verificar')->alignCenter(),
                 IconColumn::make('is_active')->label('Activa')->boolean()->alignCenter(),
                 TextColumn::make('created_at')->label('Registro')->date('d/m/Y')->sortable(),
             ])
             ->filters([
                 SelectFilter::make('person_type')->label('Tipo de persona')->options(PersonType::class),
                 TernaryFilter::make('email_verified_at')->label('Correo confirmado')->nullable(),
+                TernaryFilter::make('identity_verified_at')->label('Identidad verificada')->nullable(),
                 TernaryFilter::make('is_active')->label('Cuenta activa'),
             ])
 

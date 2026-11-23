@@ -6,6 +6,7 @@ use App\Models\Agency;
 use App\Models\OrganizationalUnit;
 use App\Models\Page;
 use App\Models\Redirect;
+use App\Rules\SafeLink;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -19,7 +20,7 @@ class LegacyRedirectController extends Controller
     {
         abort_unless($request->isMethod('GET'), 404);
 
-        if ($redirect = Redirect::findForRequest($request)) {
+        if (($redirect = Redirect::findForRequest($request)) && SafeLink::isSafe($redirect->new_path)) {
             $redirect->registerHit();
 
             return redirect($redirect->new_path, 301);

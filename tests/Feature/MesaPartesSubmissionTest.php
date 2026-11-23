@@ -172,6 +172,35 @@ class MesaPartesSubmissionTest extends TestCase
         $this->assertNotNull($notice->fresh()->read_at);
     }
 
+    public function test_a_notice_loaded_ahead_by_the_browser_is_not_marked_as_read(): void
+    {
+        $this->file()->assertRedirect();
+        SubmissionWorkflow::observe(Submission::query()->sole(), 'Falta la firma.', User::factory()->admin()->create());
+        $notice = $this->citizen->inbox()->where('title', 'like', '%observación%')->sole();
+
+        $this->get(route('mesa-partes.notifications.show', $notice), ['Sec-Purpose' => 'prefetch'])->assertOk();
+        $this->assertNull($notice->fresh()->read_at);
+
+        $this->get(route('mesa-partes.notifications.show', $notice))->assertOk();
+        $this->assertNotNull($notice->fresh()->read_at);
+    }
+
+    public function test_stored_files_take_their_extension_from_the_content_not_the_name(): void
+    {
+        // A real file, because the fake ones report the type of their name instead of reading the content.
+        $temporary = tempnam(sys_get_temp_dir(), 'mpv');
+        file_put_contents($temporary, $this->pdf()->getContent());
+
+        $this->file(['principal' => new UploadedFile($temporary, 'escrito.html', null, null, true)])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $path = Submission::query()->with('files')->sole()->files->sole()->path;
+
+        $this->assertStringEndsWith('.pdf', $path);
+        Storage::disk('local')->assertExists($path);
+    }
+
     public function test_a_document_is_declared_not_filed_only_after_the_term_to_cure_it(): void
     {
         $this->travelTo(Carbon::parse('2026-11-23 10:00'));
@@ -200,6 +229,8 @@ class MesaPartesSubmissionTest extends TestCase
         $submission = Submission::query()->with('files')->sole();
         $other = Citizen::factory()->create();
 
+        // Another person, another browser: the session is bound to the password of whoever signed in.
+        $this->flushSession();
         $this->actingAs($other, 'citizen');
         $this->get(route('mesa-partes.submissions.show', $submission))->assertNotFound();
         $this->get(route('mesa-partes.submissions.receipt', $submission))->assertNotFound();

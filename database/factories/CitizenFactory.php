@@ -48,6 +48,11 @@ class CitizenFactory extends Factory
         return $this->state(fn (): array => ['e_notifications_authorized_at' => null]);
     }
 
+    public function identityVerified(): static
+    {
+        return $this->state(fn (): array => ['identity_verified_at' => now()]);
+    }
+
     public function suspended(): static
     {
         return $this->state(fn (): array => ['is_active' => false]);

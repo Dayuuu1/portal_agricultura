@@ -195,4 +195,14 @@ class Submission extends Model
     {
         return ['ip_address'];
     }
+
+    /**
+     * What the citizen and the staff wrote stays in the expediente, readable only with access to the Mesa de Partes.
+     *
+     * @return list<string>
+     */
+    protected function activityLogMasked(): array
+    {
+        return ['subject', 'description', 'observation', 'response'];
+    }
 }

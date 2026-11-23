@@ -9,6 +9,7 @@ use App\Filament\Resources\ProcedureTypes\Pages\ManageProcedureTypes;
 use App\Filament\Resources\Submissions\Pages\ListSubmissions;
 use App\Filament\Resources\Submissions\Pages\ViewSubmission;
 use App\Filament\Widgets\PendingTasks;
+use App\Models\ActivityLog;
 use App\Models\Citizen;
 use App\Models\OrganizationalUnit;
 use App\Models\ProcedureType;
@@ -112,7 +113,37 @@ class MesaPartesPanelTest extends TestCase
             ->assertActionHidden('derive');
 
         Livewire::test(ViewCitizen::class, ['record' => $submission->citizen_id])
-            ->assertActionHidden('toggleActive');
+            ->assertActionHidden('toggleActive')
+            ->assertActionHidden('verifyIdentity');
+    }
+
+    public function test_staff_record_who_checked_the_identity_behind_an_account(): void
+    {
+        $submission = $this->filedSubmission();
+        $staff = $this->mesaDePartesStaff();
+        $this->actingAs($staff);
+
+        Livewire::test(ViewSubmission::class, ['record' => $submission->code])->assertSee('Sin verificar');
+
+        Livewire::test(ViewCitizen::class, ['record' => $submission->citizen_id])->callAction('verifyIdentity');
+
+        $citizen = $submission->citizen->fresh();
+        $this->assertTrue($citizen->hasVerifiedIdentity());
+        $this->assertTrue($citizen->identityVerifier->is($staff));
+
+        Livewire::test(ViewSubmission::class, ['record' => $submission->code])->assertDontSee('Sin verificar');
+    }
+
+    public function test_the_activity_log_records_changes_of_personal_data_without_the_data(): void
+    {
+        $citizen = Citizen::factory()->create(['phone' => '987654321']);
+
+        $citizen->update(['phone' => '912345678', 'address' => 'Av. Madre de Dios 456']);
+
+        $changes = ActivityLog::query()->where('event', 'updated')->whereMorphedTo('subject', $citizen)->sole()->changes;
+        $this->assertSame(['old' => '(dato protegido)', 'new' => '(dato protegido)'], $changes['phone']);
+        $this->assertArrayHasKey('address', $changes);
+        $this->assertStringNotContainsString('912345678', (string) json_encode($changes));
     }
 
     public function test_the_service_rules_are_configured_from_the_panel(): void

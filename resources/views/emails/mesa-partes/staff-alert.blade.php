@@ -3,8 +3,8 @@
 
 <x-mail::panel>
 **{{ $submission->code }}** · {{ $submission->procedureType->name }}<br>
-Asunto: {{ $submission->subject }}<br>
-Administrado: {{ $submission->citizen->fullName() }} ({{ $submission->citizen->documentLabel() }})<br>
+Asunto: {{ \App\Support\MarkdownText::escape($submission->subject) }}<br>
+Administrado: {{ \App\Support\MarkdownText::escape($submission->citizen->fullName()) }} ({{ \App\Support\MarkdownText::escape($submission->citizen->documentLabel()) }})<br>
 Fecha de presentación: {{ $submission->filed_on->format('d/m/Y') }}
 </x-mail::panel>
 

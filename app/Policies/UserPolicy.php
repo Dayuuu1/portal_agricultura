@@ -21,11 +21,16 @@ class UserPolicy extends ModulePolicy
         return parent::update($user, $record) && $this->canHandle($user, $record);
     }
 
+    /**
+     * An account with history is deactivated, not deleted: deleting it would leave its changes in the activity
+     * log without an author.
+     */
     public function delete(User $user, ?Model $record = null): bool
     {
         return parent::delete($user, $record)
             && $this->canHandle($user, $record)
-            && ! ($record instanceof User && $user->is($record));
+            && ! ($record instanceof User && $user->is($record))
+            && ! ($record instanceof User && $record->activityLogs()->exists());
     }
 
     public function deleteAny(User $user): bool

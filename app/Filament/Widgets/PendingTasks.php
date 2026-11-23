@@ -81,7 +81,7 @@ class PendingTasks extends Widget
             ['unidades.update', fn (): int => OrganizationalUnit::query()->active()->whereNull('head_name')->count(),
                 'Oficinas sin responsable', 'El directorio muestra «Por actualizar». Registre nombre y cargo.',
                 OrganizationalUnitResource::getUrl(parameters: ['tab' => 'sin-responsable']), Heroicon::OutlinedUserMinus, 'gray'],
-            ['datos_portal.update', fn (): int => Setting::query()->where(fn ($query) => $query->whereNull('value')->orWhere('value', ''))->count(),
+            ['datos_portal.update', fn (): int => Setting::query()->portalData()->where(fn ($query) => $query->whereNull('value')->orWhere('value', ''))->count(),
                 'Datos del portal sin configurar', 'Por ejemplo, enlaces a mesa de partes, libro de reclamaciones o transparencia.',
                 SettingResource::getUrl(), Heroicon::OutlinedCog6Tooth, 'gray'],
         ];

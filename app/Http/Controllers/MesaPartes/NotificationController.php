@@ -24,9 +24,19 @@ class NotificationController extends Controller
     {
         abort_unless($notification->citizen_id === $this->citizen($request)->id, 404);
 
-        $notification->markAsRead();
+        // The reading date is evidence of the notification, so a page the browser loads ahead of time does not count.
+        if (! $this->isPrefetch($request)) {
+            $notification->markAsRead();
+        }
 
         return view('mesa-partes.notifications.show', ['notification' => $notification->load('submission')]);
+    }
+
+    private function isPrefetch(Request $request): bool
+    {
+        $purpose = strtolower($request->header('Sec-Purpose', '').' '.$request->header('Purpose', '').' '.$request->header('X-Moz', ''));
+
+        return str_contains($purpose, 'prefetch') || str_contains($purpose, 'prerender');
     }
 
     private function citizen(Request $request): Citizen

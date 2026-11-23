@@ -13,8 +13,7 @@
     {{-- Banner: foto de fondo por diapositiva, velo institucional, curvas de nivel y título que entra palabra por palabra --}}
     <section class="relative isolate overflow-hidden bg-brand-950 text-white"
         x-data="heroCarousel({{ max($slides->count(), 1) }})"
-        @mouseenter="hovering = true" @mouseleave="hovering = false"
-        @focusin="hovering = true" @focusout="if (! $el.contains($event.relatedTarget)) hovering = false"
+        @focusin="focusEntered($event)" @focusout="focusLeft($event)"
         aria-roledescription="carrusel" aria-label="Destacados">
 
         @forelse ($slides as $index => $slide)
@@ -53,9 +52,9 @@
                             @if ($slide->subtitle)
                                 <p class="enter mt-6 max-w-xl text-lg text-brand-50/90 sm:text-xl" style="--d: 380ms">{{ $slide->subtitle }}</p>
                             @endif
-                            @if ($slide->button_url)
-                                <div class="enter mt-9 flex flex-wrap gap-3" style="--d: 500ms">
-                                    <a href="{{ $slide->button_url }}" class="btn-gold group px-5 py-3 text-base">
+                            @if ($slide->buttonLink())
+                                <div class="enter mt-9 flex flex-wrap gap-3" style="--d: 500ms" @mouseenter="hovering = true" @mouseleave="hovering = false">
+                                    <a href="{{ $slide->buttonLink() }}" class="btn-gold group px-5 py-3 text-base">
                                         {{ $slide->button_text ?: 'Ver más' }}
                                         <x-heroicon-m-arrow-right class="size-5 transition duration-300 ease-out-quint group-hover:translate-x-1" />
                                     </a>
@@ -105,7 +104,7 @@
         @if ($slides->count() > 1)
             {{-- Pestañas: la barra dorada indica cuánto falta para la siguiente diapositiva. --}}
             <div class="absolute inset-x-0 bottom-20 sm:bottom-24">
-                <div class="container-site flex items-end gap-3 sm:gap-6">
+                <div class="container-site flex items-end gap-3 sm:gap-6" @mouseenter="hovering = true" @mouseleave="hovering = false">
                     <div class="grid flex-1 grid-flow-col gap-2 sm:gap-6" style="grid-auto-columns: minmax(0, 1fr)">
                         @foreach ($slides as $index => $slide)
                             <button type="button" @click="go({{ $index }})" class="group pt-3 text-left"

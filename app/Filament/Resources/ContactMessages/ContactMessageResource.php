@@ -23,6 +23,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Gate;
 use UnitEnum;
 
 class ContactMessageResource extends Resource
@@ -108,6 +109,7 @@ class ContactMessageResource extends Resource
                     ->label('Marcar leído')
                     ->icon(Heroicon::OutlinedCheck)
                     ->visible(fn (ContactMessage $record): bool => $record->read_at === null)
+                    ->authorize('update')
                     ->action(fn (ContactMessage $record) => $record->update(['read_at' => now()])),
                 Action::make('reply')
                     ->label('Responder')
@@ -121,6 +123,7 @@ class ContactMessageResource extends Resource
                     BulkAction::make('markAsRead')
                         ->label('Marcar como leídos')
                         ->icon(Heroicon::OutlinedCheck)
+                        ->authorize(fn (): bool => Gate::allows('update', ContactMessage::class))
                         ->action(fn (Collection $records) => ContactMessage::query()->whereKey($records->modelKeys())->unread()->update(['read_at' => now()]))
                         ->deselectRecordsAfterCompletion(),
                     DeleteBulkAction::make(),

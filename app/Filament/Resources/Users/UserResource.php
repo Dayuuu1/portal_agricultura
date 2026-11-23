@@ -172,7 +172,12 @@ class UserResource extends Resource
                         'filters' => ['user' => ['value' => $record->id]],
                     ])),
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->visible(fn (): bool => (bool) auth()->user()?->hasPermission('usuarios.delete'))
+                    ->authorizationTooltip()
+                    ->authorizationMessage(fn (User $record): string => $record->activityLogs()->exists()
+                        ? 'Tiene actividad registrada: desactive la cuenta para que no pueda ingresar y se conserve quién hizo cada cambio.'
+                        : 'No puede eliminar esta cuenta.'),
             ]);
     }
 

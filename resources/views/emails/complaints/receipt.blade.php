@@ -1,7 +1,7 @@
 <x-mail::message>
 # Recibimos su reclamo
 
-Estimado(a) {{ $complaint->full_name }}:
+Estimado(a) {{ \App\Support\MarkdownText::escape($complaint->full_name) }}:
 
 Su reclamo quedó registrado en el Libro de Reclamaciones de la {{ \App\Models\Setting::valueOf('site_name', config('app.name')) }}. Esta es la copia de su registro.
 

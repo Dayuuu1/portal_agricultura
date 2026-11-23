@@ -2,7 +2,7 @@
 <x-mail::message>
 # Recibimos su documento
 
-Estimado(a) {{ $submission->citizen->fullName() }}:
+Estimado(a) {{ \App\Support\MarkdownText::escape($submission->citizen->fullName()) }}:
 
 Su documento ingresó por la Mesa de Partes Virtual de la {{ $siteName }}. Este es su cargo de recepción.
 
@@ -16,7 +16,7 @@ Fecha de presentación: **{{ $submission->filed_on->translatedFormat('j \d\e F \
 </x-mail::panel>
 
 **Trámite:** {{ $submission->procedureType->name }}<br>
-**Asunto:** {{ $submission->subject }}<br>
+**Asunto:** {{ \App\Support\MarkdownText::escape($submission->subject) }}<br>
 **Folios:** {{ $submission->folios }}
 @if ($submission->due_on)
 <br>**Plazo de atención:** hasta el {{ $submission->due_on->translatedFormat('j \d\e F \d\e Y') }} ({{ $submission->procedureType->attentionDays() }} días hábiles)

@@ -65,10 +65,41 @@ class MesaPartesAccountTest extends TestCase
         $this->actingAs(Citizen::factory()->unverified()->create(), 'citizen');
         $this->get('/mesa-de-partes/verificar-correo')->assertOk()->assertSee('Confirme su correo');
 
+        // Another person, another browser: the session is bound to the password of whoever signed in.
+        $this->flushSession();
         $this->actingAs(Citizen::factory()->create(), 'citizen');
         $this->get('/mesa-de-partes/mi-cuenta/tramites/nuevo')->assertOk()->assertSee('Presentar documento');
         $this->get('/mesa-de-partes/mi-cuenta/notificaciones')->assertOk()->assertSee('Notificaciones');
         $this->get('/mesa-de-partes/mi-cuenta/perfil')->assertOk()->assertSee('Mi perfil');
+    }
+
+    public function test_changing_the_password_closes_the_sessions_opened_elsewhere(): void
+    {
+        $this->configureMesaPartes();
+        $citizen = Citizen::factory()->create();
+
+        $this->actingAs($citizen, 'citizen')->get('/mesa-de-partes/mi-cuenta')->assertOk();
+
+        // The password is changed from another device…
+        $citizen->forceFill(['password' => 'OtraClave2026x'])->save();
+
+        // …and this browser, still holding the old session, is sent back to the sign-in page.
+        $this->get('/mesa-de-partes/mi-cuenta')->assertRedirect(route('mesa-partes.login'));
+    }
+
+    public function test_each_form_has_its_own_request_limit(): void
+    {
+        $this->configureMesaPartes();
+
+        foreach (range(1, 10) as $attempt) {
+            $this->get('/mesa-de-partes/consulta')->assertOk();
+        }
+
+        $this->get('/mesa-de-partes/consulta')->assertTooManyRequests();
+
+        // Using up the lookups does not lock the visitor out of signing in.
+        $this->post('/mesa-de-partes/ingresar', ['email' => 'rosa@example.com', 'password' => 'Incorrecta123'])
+            ->assertSessionHasErrors('email');
     }
 
     public function test_citizens_register_confirm_their_email_and_reach_their_account(): void

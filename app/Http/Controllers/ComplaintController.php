@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -25,6 +26,8 @@ use Throwable;
  */
 class ComplaintController extends Controller
 {
+    private const COPIES_PER_ADDRESS_PER_DAY = 3;
+
     public function create(): View
     {
         return view('complaints.create', [
@@ -49,9 +52,11 @@ class ComplaintController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        $this->sendMails($complaint);
+        $copySent = $this->sendMails($complaint);
 
-        return redirect()->to(URL::temporarySignedRoute('complaints.receipt', now()->addHours(2), $complaint));
+        return redirect()
+            ->to(URL::temporarySignedRoute('complaints.receipt', now()->addHours(2), $complaint))
+            ->with('complaint_copy_sent', $copySent);
     }
 
     /**
@@ -81,8 +86,10 @@ class ComplaintController extends Controller
 
     /**
      * A mail failure must never lose the claim: it is already saved and visible in the panel.
+     *
+     * @return bool Whether the person's copy was e-mailed, so the receipt does not promise one that never left.
      */
-    private function sendMails(Complaint $complaint): void
+    private function sendMails(Complaint $complaint): bool
     {
         $mailbox = Setting::valueOf('complaints_email') ?: Setting::valueOf('email');
 
@@ -90,12 +97,40 @@ class ComplaintController extends Controller
             if ($mailbox) {
                 Mail::to($mailbox)->send(new ComplaintRegistered($complaint));
             }
-
-            if (filled($complaint->email)) {
-                Mail::to($complaint->email, $complaint->full_name)->send(new ComplaintReceipt($complaint));
-            }
         } catch (Throwable $exception) {
             report($exception);
         }
+
+        if (blank($complaint->email) || ! $this->mayMailCopyTo($complaint->email)) {
+            return false;
+        }
+
+        try {
+            Mail::to($complaint->email, $complaint->full_name)->send(new ComplaintReceipt($complaint));
+
+            return true;
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return false;
+        }
+    }
+
+    /**
+     * The form accepts any address, so it could be used to flood a stranger's inbox from the entity's account.
+     * A few copies a day per address are enough for anyone filing their own claims; the claim is saved anyway
+     * and its copy stays on the screen that follows.
+     */
+    private function mayMailCopyTo(string $email): bool
+    {
+        $key = 'complaint-copy:'.sha1(Str::lower(trim($email)));
+
+        if (RateLimiter::tooManyAttempts($key, self::COPIES_PER_ADDRESS_PER_DAY)) {
+            return false;
+        }
+
+        RateLimiter::hit($key, 60 * 60 * 24);
+
+        return true;
     }
 }

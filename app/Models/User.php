@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -61,6 +62,28 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class)->using(RoleUser::class);
+    }
+
+    /**
+     * What the person did in the panel: changes, sign-ins and failed sign-ins.
+     *
+     * @return HasMany<ActivityLog, $this>
+     */
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
+    /**
+     * Whether the policy chosen in «Correo y acceso» obliges this person to use two-step verification.
+     */
+    public function mustUseMultiFactorAuthentication(): bool
+    {
+        return match (Setting::valueOf('panel_mfa_required')) {
+            'all' => true,
+            'admins' => $this->is_admin,
+            default => false,
+        };
     }
 
     public function canAccessPanel(Panel $panel): bool

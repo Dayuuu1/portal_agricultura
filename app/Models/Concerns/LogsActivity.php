@@ -45,11 +45,23 @@ trait LogsActivity
     }
 
     /**
+     * Attributes whose change is recorded without their values (personal data, secrets): the history still
+     * shows who changed them and when, but whoever may read it does not learn the data itself.
+     *
+     * @return list<string>
+     */
+    protected function activityLogMasked(): array
+    {
+        return [];
+    }
+
+    /**
      * @return array<string, array{old: mixed, new: mixed}>
      */
     protected function activityLogChanges(): array
     {
         $ignored = [...$this->activityLogExcluded(), 'updated_at', 'created_at', 'views', 'downloads'];
+        $masked = $this->activityLogMasked();
         $changes = [];
 
         foreach ($this->getChanges() as $attribute => $value) {
@@ -57,10 +69,12 @@ trait LogsActivity
                 continue;
             }
 
-            $changes[$attribute] = [
-                'old' => $this->activityLogValue($this->getOriginal($attribute)),
-                'new' => $this->activityLogValue($this->getAttribute($attribute)),
-            ];
+            $old = $this->getOriginal($attribute);
+            $new = $this->getAttribute($attribute);
+
+            $changes[$attribute] = in_array($attribute, $masked, true)
+                ? ['old' => blank($old) ? null : '(dato protegido)', 'new' => blank($new) ? null : '(dato protegido)']
+                : ['old' => $this->activityLogValue($old), 'new' => $this->activityLogValue($new)];
         }
 
         return $changes;

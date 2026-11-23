@@ -16,7 +16,8 @@ final class SubmissionFileStore
 {
     public static function store(Submission $submission, UploadedFile $file, SubmissionFileKind $kind, ?int $userId = null): SubmissionFile
     {
-        $extension = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?: 'pdf'));
+        // Taken from the content (the validated MIME type), never from the name the browser sent.
+        $extension = $file->extension() ?: 'bin';
         $absolutePath = (string) $file->getRealPath();
         $mime = (string) $file->getMimeType();
 
