@@ -12,3 +12,8 @@ window.Alpine = Alpine;
 Alpine.start();
 
 initMotion();
+
+// El visor de fotos solo se descarga en las páginas que tienen fotos ampliables.
+if (document.querySelector('[data-photo-gallery]')) {
+    import('./photo-gallery').then(({ default: initPhotoGalleries }) => initPhotoGalleries());
+}

@@ -1,6 +1,6 @@
 @php
     $heading = $section?->getLabel() ?? 'Documentos';
-    $subtitle = $section?->description() ?? 'Resoluciones, documentos de gestión e información agraria publicados por la Dirección Regional, ordenados por tipo.';
+    $subtitle = $section?->description() ?? 'Resoluciones, instrumentos de gestión y documentos de transparencia publicados por la Dirección Regional, ordenados por tipo.';
 @endphp
 
 <x-layouts.app :title="$heading" :description="$subtitle">
@@ -43,7 +43,26 @@
                     </section>
                 @endforeach
 
-                @if ($typesBySection->isEmpty())
+                @if ($agrarian)
+                    {{-- La estadística agraria tiene su propia portada: aquí solo se indica dónde está. --}}
+                    <section aria-labelledby="seccion-informacion-agraria" class="relative isolate overflow-hidden rounded-3xl bg-brand-900 p-6 text-white shadow-lift sm:p-8">
+                        <x-site.contours class="absolute inset-0 -z-10 size-full text-gold-300/15" />
+                        <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="max-w-md">
+                                <h2 id="seccion-informacion-agraria" class="text-2xl font-bold">{{ \App\Enums\DocumentSection::InformacionAgraria->getLabel() }}</h2>
+                                <p class="mt-2 text-brand-100">
+                                    Boletines y estadística agrícola, pecuaria y agroindustrial tienen su propia sección:
+                                    {{ number_format($agrarian['total']) }} {{ $agrarian['total'] === 1 ? 'reporte' : 'reportes' }}{{ $agrarian['lastPublishedOn'] ? '; el último se publicó el '.$agrarian['lastPublishedOn']->translatedFormat('j M Y') : '' }}.
+                                </p>
+                            </div>
+                            <a href="{{ route('agrarian-information') }}" class="btn-gold group shrink-0 px-5 py-3">
+                                <x-heroicon-o-presentation-chart-line class="size-5" /> Ir a Información agraria
+                            </a>
+                        </div>
+                    </section>
+                @endif
+
+                @if ($typesBySection->isEmpty() && ! $agrarian)
                     <x-empty-state icon="heroicon-o-document-text" title="Aún no hay documentos publicados" message="Cuando la entidad publique documentos aparecerán aquí, ordenados por tipo." />
                 @endif
             </div>

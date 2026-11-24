@@ -109,7 +109,7 @@ class DocumentTypeResource extends Resource
                     Action::make('viewOnSite')
                         ->label('Ver en el portal')
                         ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
-                        ->url(fn (DocumentType $record): string => route('documents.index', ['tipo' => $record->slug]))
+                        ->url(fn (DocumentType $record): string => $record->publicUrl())
                         ->openUrlInNewTab(),
                     EditAction::make(),
                     DeleteAction::make()

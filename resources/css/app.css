@@ -243,6 +243,57 @@
         opacity: 0;
     }
 
+    /* Fotos que se amplían en el visor de fotos (posts/show.blade.php, resources/js/photo-gallery.js). */
+    .media-zoom {
+        cursor: zoom-in;
+    }
+
+    .media-zoom:hover > img {
+        transform: scale(1.03);
+    }
+
+    .media-zoom-hint {
+        @apply absolute right-3 bottom-3 grid size-9 place-items-center rounded-full bg-brand-950/70 text-white opacity-0 ring-1 ring-white/25 backdrop-blur-sm transition-opacity duration-300;
+    }
+
+    .media-zoom:hover > .media-zoom-hint,
+    .media-zoom:focus-visible > .media-zoom-hint {
+        opacity: 1;
+    }
+
+    /* En pantallas táctiles no hay «hover»: el aviso queda siempre visible. */
+    @media (hover: none) {
+        .media-zoom-hint {
+            opacity: 1;
+        }
+    }
+
+    /*
+     * Visor de fotos (PhotoSwipe) con los colores del portal. Doble clase para ganar a photoswipe.css,
+     * que se carga después junto con el visor.
+     */
+    .pswp.pswp--portal {
+        --pswp-bg: var(--color-brand-950);
+        --pswp-placeholder-bg: var(--color-brand-900);
+        --pswp-icon-color: #fff;
+        --pswp-icon-color-secondary: var(--color-brand-950);
+        --pswp-icon-stroke-color: var(--color-brand-950);
+        --pswp-error-text-color: var(--color-brand-100);
+        font-family: var(--font-sans);
+    }
+
+    .pswp--portal .pswp__counter {
+        @apply font-semibold tabular-nums;
+    }
+
+    .pswp--portal .pswp__button:focus-visible {
+        @apply outline-2 -outline-offset-4 outline-gold-400;
+    }
+
+    .pswp--portal .pswp__error-msg {
+        @apply text-base;
+    }
+
     /* Carrusel de enlaces de interés (components/link-carousel.blade.php). */
     .link-carousel-viewport {
         /* «relative»: los textos sr-only (posición absoluta) también quedan recortados y no ensanchan la página. */

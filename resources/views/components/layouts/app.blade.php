@@ -1,4 +1,5 @@
-@props(['title' => null, 'description' => null, 'image' => null, 'robots' => null])
+{{-- "nav" marks a main menu item as active when the route alone does not tell (agrarian documents use the documents routes). --}}
+@props(['title' => null, 'description' => null, 'image' => null, 'robots' => null, 'nav' => null])
 
 @php
     $siteName = $settings['site_name'] ?? config('app.name');
@@ -60,7 +61,7 @@
         Saltar al contenido principal
     </a>
 
-    <x-site.header />
+    <x-site.header :active="$nav" />
 
     <main id="contenido" class="flex-1 focus:outline-none" tabindex="-1">
         {{ $slot }}

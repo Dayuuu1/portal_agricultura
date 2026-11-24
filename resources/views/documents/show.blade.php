@@ -1,7 +1,9 @@
-<x-layouts.app :title="$document->title" :description="$document->description ?? $document->title">
+@php($isAgrarian = $document->documentType->isAgrarianInformation())
+
+<x-layouts.app :title="$document->title" :description="$document->description ?? $document->title" :nav="$isAgrarian ? 'informacion' : null">
     <x-page-header :title="$document->title" :breadcrumbs="[
-        'Documentos' => route('documents.index'),
-        $document->documentType->name => route('documents.index', ['tipo' => $document->documentType->slug]),
+        ($isAgrarian ? 'Información agraria' : 'Documentos') => $isAgrarian ? route('agrarian-information') : route('documents.index'),
+        $document->documentType->name => $document->documentType->publicUrl(),
         'Detalle' => null,
     ]" />
 

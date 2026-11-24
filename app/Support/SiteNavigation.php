@@ -19,7 +19,7 @@ final class SiteNavigation
     /**
      * Versioned so a change in the shape of the menu rebuilds it without clearing the cache by hand (v2 adds pages).
      */
-    public const CACHE_KEY = 'portal.navigation.v2';
+    public const CACHE_KEY = 'portal.navigation.v3';
 
     /**
      * Icons for the pages the portal ships with; other pages get a generic document icon.
@@ -72,7 +72,7 @@ final class SiteNavigation
                 ->map(fn (Agency $agency): array => ['name' => $agency->name, 'url' => route('agencies.show', $agency, false)])
                 ->all(),
             'agrarianTypes' => DocumentType::query()->where('section', DocumentSection::InformacionAgraria)->orderBy('sort_order')->get()
-                ->map(fn (DocumentType $type): array => ['name' => $type->name, 'url' => route('documents.index', ['tipo' => $type->slug], false)])
+                ->map(fn (DocumentType $type): array => ['name' => $type->name, 'url' => $type->publicUrl(absolute: false)])
                 ->all(),
             'pages' => Page::query()->inMenu()->orderBy('id')->get()
                 ->map(fn (Page $page): array => [

@@ -7,6 +7,7 @@ use App\Models\Document;
 use App\Models\DocumentType;
 use App\Support\Documents\DocumentRelease;
 use App\Support\Documents\DocumentSeries;
+use App\Support\Documents\DocumentTypeEntry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,18 +19,46 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         $section = DocumentSection::tryFrom($request->string('seccion')->toString());
         $typeSlug = $request->string('tipo')->trim()->toString();
         $activeType = $typeSlug !== '' ? DocumentType::query()->where('slug', $typeSlug)->first() : null;
-        $yearParam = $request->string('anio')->toString();
-        $term = $request->string('q')->trim()->limit(100, '')->toString();
+
+        // Agrarian statistics have their own pages under «Información agraria»; links to the former addresses keep working.
+        if ($activeType?->isAgrarianInformation()) {
+            return redirect()->to($activeType->publicUrl($request->except('tipo', 'seccion')), 301);
+        }
 
         // Without a type, search or year the page is an overview of the document types; "vista=lista" keeps the plain list.
-        if ($typeSlug === '' && $term === '' && $yearParam === '' && $request->string('vista')->toString() !== 'lista') {
-            return $this->overview($section);
+        if ($typeSlug === '' && $request->string('q')->trim()->isEmpty() && $request->string('anio')->isEmpty() && $request->string('vista')->toString() !== 'lista') {
+            return $section === DocumentSection::InformacionAgraria
+                ? redirect()->route('agrarian-information', status: 301)
+                : $this->overview($section);
         }
+
+        return $this->listing($request, $section, $activeType, $typeSlug);
+    }
+
+    /**
+     * Page of one agrarian statistics type (crop production, livestock, bulletins…), inside «Información agraria».
+     */
+    public function agrarianType(Request $request, DocumentType $documentType): View|RedirectResponse
+    {
+        if (! $documentType->isAgrarianInformation()) {
+            return redirect()->to($documentType->publicUrl($request->query()), 301);
+        }
+
+        return $this->listing($request, null, $documentType, $documentType->slug);
+    }
+
+    /**
+     * Documents of a type, a section or the whole portal, filtered by year and search term.
+     */
+    private function listing(Request $request, ?DocumentSection $section, ?DocumentType $activeType, string $typeSlug): View
+    {
+        $yearParam = $request->string('anio')->toString();
+        $term = $request->string('q')->trim()->limit(100, '')->toString();
 
         $scope = fn (): Builder => Document::query()->published()
             ->when($section, fn (Builder $query) => $query->whereRelation('documentType', 'section', $section->value))
@@ -61,12 +90,17 @@ class DocumentController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        // Agrarian statistics are browsed on their own, without the institutional document types around them.
+        $isAgrarian = $section === DocumentSection::InformacionAgraria || (bool) $activeType?->isAgrarianInformation();
+
         return view('documents.index', [
             'documents' => $documents,
             'statisticsYear' => $statisticsYear,
             'lastPublishedOn' => $activeType ? transform($scope()->max('issued_at'), fn (string $date): Carbon => Carbon::parse($date)) : null,
             'activeType' => $activeType,
+            'isAgrarian' => $isAgrarian,
             'typesBySection' => DocumentType::query()
+                ->when($isAgrarian, fn (Builder $query) => $query->where('section', DocumentSection::InformacionAgraria))
                 ->withCount(['documents' => fn (Builder $query) => $query->published()])
                 ->orderBy('sort_order')->get()
                 ->groupBy(fn (DocumentType $type): string => $type->section->value),
@@ -76,36 +110,29 @@ class DocumentController extends Controller
     }
 
     /**
-     * Cards for every document type that has published documents, grouped by section, plus the latest uploads.
+     * Cards for every institutional document type that has published documents, grouped by section, plus the latest
+     * uploads. Agrarian statistics, most of the documents, only get a card leading to «Información agraria».
      */
     private function overview(?DocumentSection $section): View
     {
-        $stats = Document::query()->published()->toBase()
-            ->selectRaw('document_type_id, count(*) as total, min(period_year) as first_year, max(period_year) as last_year, max(issued_at) as last_issued_at')
-            ->groupBy('document_type_id')
-            ->get()
-            ->keyBy('document_type_id');
-
-        $typesBySection = DocumentType::query()
+        $entries = DocumentTypeEntry::forTypes(DocumentType::query()
             ->when($section, fn (Builder $query) => $query->where('section', $section->value))
             ->orderBy('sort_order')->orderBy('name')
-            ->get()
-            ->filter(fn (DocumentType $type): bool => $stats->has($type->id))
-            ->map(fn (DocumentType $type): array => [
-                'type' => $type,
-                'total' => (int) $stats[$type->id]->total,
-                'firstYear' => $stats[$type->id]->first_year ? (int) $stats[$type->id]->first_year : null,
-                'lastYear' => $stats[$type->id]->last_year ? (int) $stats[$type->id]->last_year : null,
-                'lastPublishedOn' => transform($stats[$type->id]->last_issued_at, fn (string $date): Carbon => Carbon::parse($date)),
-            ])
-            ->groupBy(fn (array $entry): string => $entry['type']->section->value);
+            ->get());
+
+        [$agrarian, $institutional] = $entries->partition(fn (DocumentTypeEntry $entry): bool => $entry->type->isAgrarianInformation());
 
         return view('documents.overview', [
             'section' => $section,
-            'typesBySection' => $typesBySection,
-            'total' => $typesBySection->flatten(1)->sum('total'),
+            'typesBySection' => $institutional->groupBy(fn (DocumentTypeEntry $entry): string => $entry->type->section->value),
+            'agrarian' => $agrarian->isEmpty() ? null : [
+                'total' => $agrarian->sum('total'),
+                'lastPublishedOn' => $agrarian->max('lastPublishedOn'),
+            ],
+            'total' => $entries->sum('total'),
             'recent' => Document::query()->published()->with('documentType')
                 ->when($section, fn (Builder $query) => $query->whereRelation('documentType', 'section', $section->value))
+                ->unless($section, fn (Builder $query) => $query->whereRelation('documentType', 'section', '!=', DocumentSection::InformacionAgraria->value))
                 ->orderByDesc('issued_at')->orderByDesc('id')
                 ->limit(6)->get(),
         ]);

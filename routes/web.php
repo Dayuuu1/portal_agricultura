@@ -47,6 +47,7 @@ Route::get('/agencias-agrarias', [AgencyController::class, 'index'])->name('agen
 Route::get('/agencias-agrarias/{agency:slug}', [AgencyController::class, 'show'])->name('agencies.show');
 
 Route::get('/informacion-agraria', AgrarianInformationController::class)->name('agrarian-information');
+Route::get('/informacion-agraria/{documentType:slug}', [DocumentController::class, 'agrarianType'])->name('agrarian-information.type');
 Route::get('/transparencia', TransparencyController::class)->name('transparency');
 
 Route::get('/contacto', [ContactController::class, 'create'])->name('contact.create');

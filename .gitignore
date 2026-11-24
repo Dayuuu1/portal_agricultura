@@ -25,6 +25,8 @@
 /storage/*.sql
 /*.sql
 /*.rar
+/*.zip
+/storage/documentos_nuevos_*
 /storage/documentos_portal_*
 /storage/imagenes_portal_*
 /storage/pail

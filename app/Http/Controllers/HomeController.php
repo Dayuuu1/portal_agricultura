@@ -38,10 +38,11 @@ class HomeController extends Controller
                 ->orderByRaw('case when status in (?, ?) then 0 else 1 end', [JobPostingStatus::EnCurso->value, JobPostingStatus::EnEvaluacion->value])
                 ->latest('starts_at')->limit(4)->get(),
             'documents' => Document::query()->published()->with('documentType')
-                ->latest('issued_at')->limit(5)->get(),
+                ->whereRelation('documentType', 'section', '!=', DocumentSection::InformacionAgraria->value)
+                ->latest('issued_at')->latest('id')->limit(5)->get(),
             'agrarianDocuments' => Document::query()->published()
                 ->whereHas('documentType', fn (Builder $query) => $query->where('section', DocumentSection::InformacionAgraria))
-                ->latest('issued_at')->limit(4)->get(),
+                ->latest('issued_at')->latest('id')->limit(4)->get(),
             'agencies' => Agency::query()->active()->orderBy('sort_order')->get(),
             'interestLinks' => Link::query()->inCarousel()->get(),
             'stats' => [

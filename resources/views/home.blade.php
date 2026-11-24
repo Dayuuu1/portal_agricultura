@@ -291,7 +291,7 @@
                                     <span class="min-w-0 flex-1">
                                         <a href="{{ route('documents.show', $document) }}" class="line-clamp-2 font-semibold text-white after:absolute after:inset-0 focus:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-gold-400">{{ $document->title }}</a>
                                         @if ($document->issued_at)
-                                            <span class="text-xs text-brand-200">{{ ucfirst($document->issued_at->translatedFormat('F Y')) }}</span>
+                                            <span class="text-xs text-brand-200">Publicado el <time datetime="{{ $document->issued_at->toDateString() }}">{{ $document->issued_at->translatedFormat('j M Y') }}</time></span>
                                         @endif
                                     </span>
                                     <x-heroicon-m-arrow-right class="size-4 shrink-0 text-gold-300 transition duration-300 ease-out-quint group-hover:translate-x-1" aria-hidden="true" />

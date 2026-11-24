@@ -52,7 +52,7 @@
                                 <li class="text-slate-500">Sin documentos publicados.</li>
                             @endforelse
                         </ul>
-                        <a href="{{ route('documents.index', ['tipo' => $type->slug]) }}" class="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-brand-700 hover:text-brand-900">
+                        <a href="{{ $type->publicUrl() }}" class="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-brand-700 hover:text-brand-900">
                             Ver todos <x-heroicon-o-arrow-right class="size-4" />
                         </a>
                     </div>

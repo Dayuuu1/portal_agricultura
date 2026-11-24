@@ -6,7 +6,7 @@
 const root = document.documentElement;
 const numberFormat = new Intl.NumberFormat('es-PE');
 
-function motionAllowed() {
+export function motionAllowed() {
     return ! window.matchMedia('(prefers-reduced-motion: reduce)').matches && ! root.classList.contains('a11y-no-motion');
 }
 

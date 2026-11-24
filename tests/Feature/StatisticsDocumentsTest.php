@@ -31,7 +31,7 @@ class StatisticsDocumentsTest extends TestCase
 
     private function yearPage(int $year, array $query = []): string
     {
-        return route('documents.index', ['tipo' => $this->agricultural->slug, 'anio' => $year, ...$query]);
+        return $this->agricultural->publicUrl(['anio' => $year, ...$query]);
     }
 
     public function test_a_statistics_year_is_organized_by_the_month_each_report_covers(): void
@@ -105,11 +105,11 @@ class StatisticsDocumentsTest extends TestCase
         $resolutions = DocumentType::factory()->section(DocumentSection::Normativa)->create(['group_by_year' => true]);
         $resolution = Document::factory()->for($resolutions)->create(['title' => 'Resolución Directoral Regional N° 075-2025', 'issued_at' => '2025-05-02']);
 
-        $this->get(route('documents.index', ['tipo' => $this->agricultural->slug, 'q' => 'precio']))
+        $this->get($this->agricultural->publicUrl(['q' => 'precio']))
             ->assertSee($report->title)
             ->assertDontSee('Julio 2025');
 
-        $this->get(route('documents.index', ['tipo' => $this->agricultural->slug, 'anio' => 'todos']))
+        $this->get($this->agricultural->publicUrl(['anio' => 'todos']))
             ->assertSee($report->title);
 
         $this->get(route('documents.index', ['tipo' => $resolutions->slug]))

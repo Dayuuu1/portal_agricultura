@@ -6,6 +6,7 @@ use App\Enums\DocumentSection;
 use App\Models\Document;
 use App\Models\DocumentType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class DocumentsOverviewTest extends TestCase
@@ -37,12 +38,23 @@ class DocumentsOverviewTest extends TestCase
             ->assertOk()
             ->assertSeeInOrder([
                 'Normas y resoluciones', route('documents.index', ['tipo' => $this->resolutions->slug]), '2 documentos', 'de 2024 a 2026', 'Actualizado el', '5 oct. 2026',
-                'Información agraria', 'Estadística Pecuaria', '1 documento', 'de 2025',
             ], false)
-            ->assertSeeInOrder(['Publicados recientemente', 'Resolución de nombramiento', 'Beneficio de ganado', 'Resolución de saneamiento'])
+            ->assertSeeInOrder(['Publicados recientemente', 'Resolución de nombramiento', 'Resolución de saneamiento'])
             ->assertSee('Ver los 3 documentos en lista')
             ->assertDontSee('Resolución en borrador')
             ->assertDontSee(route('documents.index', ['tipo' => $empty->slug]), false);
+    }
+
+    public function test_agrarian_statistics_only_get_a_card_leading_to_their_own_section(): void
+    {
+        $response = $this->get('/documentos')
+            ->assertOk()
+            ->assertSeeInOrder(['Información agraria', '1 reporte; el último se publicó el 11 sep. 2025', 'Ir a Información agraria'])
+            ->assertSee('href="'.route('agrarian-information').'"', false)
+            ->assertDontSee('Beneficio de ganado');
+
+        // The main menu still lists the agrarian topics; the page body leads only to their section.
+        $this->assertStringNotContainsString($this->livestock->publicUrl(), Str::between($response->getContent(), '<main', '</main>'));
     }
 
     public function test_a_section_shows_only_its_types_and_latest_documents(): void

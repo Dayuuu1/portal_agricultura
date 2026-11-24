@@ -72,13 +72,48 @@ class Post extends Model
     }
 
     /**
-     * @return list<string>
+     * @return array{url: string, width: int|null, height: int|null}|null
      */
-    public function galleryUrls(): array
+    public function coverPhoto(): ?array
+    {
+        return $this->cover_image ? $this->photo($this->cover_image) : null;
+    }
+
+    /**
+     * Gallery photos, leaving out the cover when it was also added to the gallery.
+     *
+     * @return list<array{url: string, width: int|null, height: int|null}>
+     */
+    public function galleryPhotos(): array
     {
         return collect($this->gallery ?? [])
-            ->map(fn (string $path): string => Storage::disk('public')->url($path))
+            ->reject(fn (string $path): bool => $path === $this->cover_image)
+            ->map(fn (string $path): array => $this->photo($path))
             ->values()
             ->all();
+    }
+
+    /**
+     * Public URL and displayed size of a stored photo, so the photo viewer opens it with its real proportions.
+     * Browsers rotate photos by their EXIF orientation, so portrait camera shots swap width and height.
+     *
+     * @return array{url: string, width: int|null, height: int|null}
+     */
+    private function photo(string $path): array
+    {
+        $disk = Storage::disk('public');
+        $file = $disk->path($path);
+        $size = is_file($file) ? rescue(fn (): array|false => getimagesize($file), false, report: false) : false;
+        [$width, $height] = $size ? [$size[0], $size[1]] : [null, null];
+
+        if ($size && $size[2] === IMAGETYPE_JPEG && function_exists('exif_read_data')) {
+            $orientation = rescue(fn (): mixed => (exif_read_data($file) ?: [])['Orientation'] ?? 1, 1, report: false);
+
+            if (in_array($orientation, [5, 6, 7, 8], true)) {
+                [$width, $height] = [$height, $width];
+            }
+        }
+
+        return ['url' => $disk->url($path), 'width' => $width, 'height' => $height];
     }
 }

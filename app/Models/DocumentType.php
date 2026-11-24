@@ -45,7 +45,24 @@ class DocumentType extends Model
      */
     public function isMonthlyStatistics(): bool
     {
-        return $this->section === DocumentSection::InformacionAgraria && $this->group_by_year;
+        return $this->isAgrarianInformation() && $this->group_by_year;
+    }
+
+    public function isAgrarianInformation(): bool
+    {
+        return $this->section === DocumentSection::InformacionAgraria;
+    }
+
+    /**
+     * Public page of the type. Agrarian statistics live under «Información agraria»; everything else under «Documentos».
+     *
+     * @param  array<string, mixed>  $query
+     */
+    public function publicUrl(array $query = [], bool $absolute = true): string
+    {
+        return $this->isAgrarianInformation()
+            ? route('agrarian-information.type', ['documentType' => $this->slug, ...$query], $absolute)
+            : route('documents.index', ['tipo' => $this->slug, ...$query], $absolute);
     }
 
     #[Scope]

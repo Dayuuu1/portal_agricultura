@@ -14,11 +14,20 @@
         </div>
     </x-page-header>
 
+    @php($cover = $post->coverPhoto())
+    @php($photos = $post->galleryPhotos())
+
     <div class="container-site mt-10 grid gap-10 lg:grid-cols-3">
-        <article class="lg:col-span-2">
-            @if ($post->cover_url)
-                <figure class="media mb-8 aspect-video rounded-3xl shadow-lift">
-                    <img src="{{ $post->cover_url }}" alt="{{ $post->title }}" fetchpriority="high">
+        {{-- Each [data-photo] link opens in the photo viewer (resources/js/photo-gallery.js); without JavaScript it opens the image. --}}
+        <article class="lg:col-span-2" data-photo-gallery>
+            @if ($cover)
+                <figure class="mb-8">
+                    <a href="{{ $cover['url'] }}" target="_blank" rel="noopener" class="media media-zoom group block aspect-video rounded-3xl shadow-lift" data-photo data-cropped="true"
+                        @if ($cover['width']) data-pswp-width="{{ $cover['width'] }}" data-pswp-height="{{ $cover['height'] }}" @endif
+                        aria-label="Ampliar la foto principal">
+                        <img src="{{ $cover['url'] }}" alt="{{ $post->title }}" fetchpriority="high">
+                        <span class="media-zoom-hint" aria-hidden="true"><x-heroicon-m-arrows-pointing-out class="size-4" /></span>
+                    </a>
                 </figure>
             @endif
 
@@ -33,12 +42,18 @@
                     </div>
                 @endif
 
-                @if ($post->galleryUrls())
-                    <h2 @class(['mb-4 text-xl font-bold text-ink', 'mt-10' => $hasBody || $post->excerpt])>Galería</h2>
+                @if ($photos)
+                    <div @class(['mb-4 flex items-baseline justify-between gap-4', 'mt-10' => $hasBody || $post->excerpt])>
+                        <h2 class="text-xl font-bold text-ink">Galería</h2>
+                        <span class="text-sm text-slate-500">{{ trans_choice('{1} 1 foto|[2,*] :count fotos', count($photos)) }}</span>
+                    </div>
                     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        @foreach ($post->galleryUrls() as $imageUrl)
-                            <a href="{{ $imageUrl }}" target="_blank" rel="noopener" class="group media block aspect-square rounded-2xl" aria-label="Abrir la imagen {{ $loop->iteration }} de la galería en una pestaña nueva">
-                                <img src="{{ $imageUrl }}" alt="Imagen {{ $loop->iteration }} de la galería" loading="lazy" decoding="async">
+                        @foreach ($photos as $photo)
+                            <a href="{{ $photo['url'] }}" target="_blank" rel="noopener" class="media media-zoom group block aspect-square rounded-2xl" data-photo data-cropped="true"
+                                @if ($photo['width']) data-pswp-width="{{ $photo['width'] }}" data-pswp-height="{{ $photo['height'] }}" @endif
+                                aria-label="Ampliar la foto {{ $loop->iteration }} de {{ $loop->count }} de la galería">
+                                <img src="{{ $photo['url'] }}" alt="Foto {{ $loop->iteration }} de la galería" loading="lazy" decoding="async">
+                                <span class="media-zoom-hint" aria-hidden="true"><x-heroicon-m-arrows-pointing-out class="size-4" /></span>
                             </a>
                         @endforeach
                     </div>

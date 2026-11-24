@@ -1,3 +1,5 @@
+@props(['active' => null])
+
 @php
     $institutionalLinks = [
         ['label' => 'Nosotros', 'url' => route('institutional.about'), 'hint' => 'Quiénes somos, misión y visión', 'icon' => 'heroicon-o-building-library'],
@@ -16,12 +18,11 @@
     $navigation = [
         ['key' => 'inicio', 'label' => 'Inicio', 'url' => route('home'), 'active' => ['home']],
         ['key' => 'institucional', 'label' => 'Institucional', 'active' => ['institutional.*', 'agencies.*', 'pages.show'], 'mega' => true],
-        ['key' => 'informacion', 'label' => 'Información agraria', 'url' => route('agrarian-information'), 'active' => ['agrarian-information'], 'children' => $agrarianLinks],
+        ['key' => 'informacion', 'label' => 'Información agraria', 'url' => route('agrarian-information'), 'active' => ['agrarian-information', 'agrarian-information.*'], 'children' => $agrarianLinks],
         ['key' => 'noticias', 'label' => 'Noticias', 'url' => route('posts.index'), 'active' => ['posts.*']],
         ['key' => 'documentos', 'label' => 'Documentos', 'url' => route('documents.index'), 'active' => ['documents.*'], 'children' => [
             ['label' => 'Normas y resoluciones', 'url' => route('documents.index', ['seccion' => 'normativa'])],
             ['label' => 'Gestión institucional (TUPA, ROF, POI…)', 'url' => route('documents.index', ['seccion' => 'gestion'])],
-            ['label' => 'Información agraria', 'url' => route('documents.index', ['seccion' => 'informacion-agraria'])],
             ['label' => 'Todos los documentos', 'url' => route('documents.index')],
         ]],
         ['key' => 'convocatorias', 'label' => 'Convocatorias', 'url' => route('job-postings.index'), 'active' => ['job-postings.*']],
@@ -135,7 +136,7 @@
         <div class="container-site relative">
             <ul class="flex items-stretch">
                 @foreach ($navigation as $item)
-                    @php($isActive = request()->routeIs(...$item['active']))
+                    @php($isActive = $active !== null ? $item['key'] === $active : request()->routeIs(...$item['active']))
                     @php($activeClasses = $isActive ? 'bg-brand-900/60 text-white after:scale-x-100' : '')
 
                     @if (isset($item['children']) || isset($item['mega']))
@@ -256,7 +257,7 @@
             <nav class="flex-1 px-4 py-4" aria-label="Navegación móvil">
                 <ul class="space-y-1">
                     @foreach ($navigation as $item)
-                        @php($isActive = request()->routeIs(...$item['active']))
+                        @php($isActive = $active !== null ? $item['key'] === $active : request()->routeIs(...$item['active']))
                         @if (isset($item['children']) || isset($item['mega']))
                             <li x-data="{ open: {{ $isActive ? 'true' : 'false' }} }">
                                 <button type="button" @click="open = ! open" :aria-expanded="open.toString()" class="flex w-full items-center justify-between rounded-lg px-3 py-3 text-left font-semibold text-slate-800 hover:bg-slate-50">

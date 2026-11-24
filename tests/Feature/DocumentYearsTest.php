@@ -42,18 +42,18 @@ class DocumentYearsTest extends TestCase
         $recent = Document::factory()->for($type)->create(['title' => 'Beneficio de ganado octubre 2026']);
         $older = Document::factory()->for($type)->create(['title' => 'Beneficio de ganado diciembre 2019']);
 
-        $this->get('/documentos?tipo='.$type->slug)
+        $this->get($type->publicUrl())
             ->assertOk()
             ->assertSee(route('documents.show', $recent))
             ->assertDontSee(route('documents.show', $older))
             ->assertSee('2019')
             ->assertSee('del año');
 
-        $this->get('/documentos?tipo='.$type->slug.'&anio=2019')
+        $this->get($type->publicUrl(['anio' => 2019]))
             ->assertSee(route('documents.show', $older))
             ->assertDontSee(route('documents.show', $recent));
 
-        $this->get('/documentos?tipo='.$type->slug.'&anio=todos')
+        $this->get($type->publicUrl(['anio' => 'todos']))
             ->assertSee($recent->title)
             ->assertSee($older->title);
     }
