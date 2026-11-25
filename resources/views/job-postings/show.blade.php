@@ -1,4 +1,4 @@
-<x-layouts.app :title="$jobPosting->code" :description="$jobPosting->title">
+<x-layouts.app :title="$jobPosting->code" :description="$jobPosting->title" :schema="\App\Support\Seo\StructuredData::jobPosting($jobPosting)">
     <x-page-header :title="$jobPosting->code" :subtitle="$jobPosting->title" :breadcrumbs="['Convocatorias' => route('job-postings.index'), $jobPosting->code => null]">
         <div class="mt-5">
             <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ring-1 ring-inset {{ $jobPosting->status->badgeClasses() }}">

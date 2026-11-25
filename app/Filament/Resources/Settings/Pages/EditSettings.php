@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Settings\Pages;
 use App\Filament\Resources\Settings\SettingResource;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\Seo\SearchEngines;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
@@ -26,7 +27,10 @@ use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 /**
@@ -61,6 +65,8 @@ class EditSettings extends Page
         'vision' => 'Visión',
         'map_embed_url' => 'Mapa de ubicación',
         'libro_reclamaciones_url' => 'Libro de reclamaciones en GOB.PE',
+        'google_site_verification' => 'Google Search Console',
+        'bing_site_verification' => 'Bing Webmaster Tools',
     ];
 
     /**
@@ -90,6 +96,8 @@ class EditSettings extends Page
         'libro_reclamaciones_url' => 'Opcional: si la entidad está registrada en la plataforma del Estado, se muestra junto al formulario del portal.',
         'complaints_email' => 'Cada reclamo registrado en el portal llega a este correo con sus adjuntos.',
         'sigaweb_url' => 'Sistema interno; no se muestra al público.',
+        'google_site_verification' => 'Pegue el código de la «Etiqueta HTML» (o la etiqueta completa: <meta name="google-site-verification" …>).',
+        'bing_site_verification' => 'Opcional. Código de la etiqueta «msvalidate.01» que muestra Bing al agregar el sitio.',
     ];
 
     private const PREFIX_ICONS = [
@@ -116,6 +124,7 @@ class EditSettings extends Page
         'contacto' => ['address', 'phone_main', 'phone_director', 'phone_procurement', 'email', 'schedule', 'map_embed_url'],
         'redes' => ['facebook_url', 'youtube_url'],
         'servicios' => ['mesa_partes_url', 'transparencia_url', 'libro_reclamaciones_url', 'complaints_email', 'sigaweb_url'],
+        'buscadores' => ['google_site_verification', 'bing_site_verification'],
     ];
 
     /**
@@ -140,7 +149,7 @@ class EditSettings extends Page
 
     public function canEdit(): bool
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         return $user instanceof User && $user->can('update', Setting::class);
     }
@@ -192,6 +201,17 @@ class EditSettings extends Page
                             $this->section('Enlaces para la ciudadanía', null, ['mesa_partes_url', 'transparencia_url', 'libro_reclamaciones_url'], columns: 1),
                             $this->section('Libro de reclamaciones del portal', null, ['complaints_email']),
                             $this->section('Uso interno', null, ['sigaweb_url']),
+                        ]),
+                        $this->tab('buscadores', 'Buscadores', Heroicon::OutlinedMagnifyingGlassCircle, [
+                            Callout::make('Esta copia del portal no se muestra en los buscadores')
+                                ->description('Fuera del servidor de producción, robots.txt y las páginas piden a Google que no indexe nada (así una copia de pruebas nunca aparece en los resultados). En el servidor publicado configure APP_ENV=production y APP_URL con el dominio en https://.')
+                                ->warning()
+                                ->visible(! SearchEngines::indexingAllowed()),
+                            Callout::make('Cómo publicar el portal en Google')
+                                ->description($this->searchConsoleSteps())
+                                ->icon(Heroicon::OutlinedInformationCircle)
+                                ->info(),
+                            $this->section('Verificación de propiedad', 'Demuestra a Google y a Bing que la entidad administra este sitio. Se publica al guardar, en todas las páginas.', ['google_site_verification', 'bing_site_verification']),
                         ]),
                         $this->otherSettingsTab(),
                     ])),
@@ -377,6 +397,26 @@ class EditSettings extends Page
     }
 
     /**
+     * Steps to register the portal in Google Search Console, with this site's own addresses.
+     */
+    private function searchConsoleSteps(): HtmlString
+    {
+        $sitemap = e(route('seo.sitemap'));
+        $robots = e(route('seo.robots'));
+        $home = e(route('home'));
+
+        return new HtmlString(<<<HTML
+            <ol class="mt-1 list-decimal space-y-1 ps-5">
+                <li>Entre a <a href="https://search.google.com/search-console" target="_blank" rel="noopener" class="font-semibold underline">Google Search Console</a> con la cuenta de Google de la entidad y pulse «Agregar propiedad».</li>
+                <li>Elija «Prefijo de la URL» y escriba <strong>{$home}</strong>.</li>
+                <li>En «Otros métodos de verificación» elija «Etiqueta HTML», copie el código, péguelo abajo y guarde. Luego pulse «Verificar» en Search Console.</li>
+                <li>En el menú «Sitemaps» de Search Console envíe <a href="{$sitemap}" target="_blank" rel="noopener" class="font-semibold underline">{$sitemap}</a>. Se actualiza solo cada vez que publica contenido.</li>
+                <li>Las reglas para los buscadores están en <a href="{$robots}" target="_blank" rel="noopener" class="underline">{$robots}</a>. Google tarda de unos días a algunas semanas en mostrar las páginas.</li>
+            </ol>
+            HTML);
+    }
+
+    /**
      * Values added later (or by another module) that have no place in the tabs yet.
      */
     private function otherSettingsTab(): ?Tab
@@ -399,8 +439,11 @@ class EditSettings extends Page
             return rescue(fn (): string => $state->temporaryUrl(), asset(Setting::DEFAULT_IMAGES[$key]), report: false);
         }
 
-        return is_string($state) && filled($state) && Storage::disk('public')->exists($state)
-            ? Storage::disk('public')->url($state)
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        return is_string($state) && filled($state) && $disk->exists($state)
+            ? $disk->url($state)
             : asset(Setting::DEFAULT_IMAGES[$key]);
     }
 }

@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AgencyController;
 use App\Http\Controllers\AgrarianInformationController;
+use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\AnnouncementTrackingController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DocumentController;
@@ -21,10 +23,18 @@ use App\Http\Controllers\MesaPartes\VerificationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SeoController;
+use App\Http\Controllers\StatisticsReportController;
 use App\Http\Controllers\TransparencyController;
+use App\Support\Seo\Sitemap;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+
+// For search engines (Google Search Console): what to crawl and the list of public pages.
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
+Route::get('/sitemaps/{section}.xml', [SeoController::class, 'section'])->whereIn('section', array_keys(Sitemap::SECTIONS))->name('seo.sitemap.section');
 
 Route::get('/noticias', [PostController::class, 'index'])->name('posts.index');
 Route::get('/noticias/{post:slug}', [PostController::class, 'show'])->name('posts.show');
@@ -103,8 +113,21 @@ Route::prefix('mesa-de-partes')->name('mesa-partes.')->group(function () {
     });
 });
 
+// Reports of «Estadísticas del portal» (printable / PDF and Excel) for the period chosen in the panel.
+Route::middleware('auth')->prefix('admin/estadisticas')->name('admin.statistics.')->controller(StatisticsReportController::class)->group(function () {
+    Route::get('/informe', 'show')->name('report');
+    Route::get('/exportar', 'export')->name('export');
+});
+
 // Files of the expedientes for the panel staff (private disk).
 Route::get('/admin/archivos/mesa-de-partes/{file}', [SubmissionFileController::class, 'staff'])->middleware('auth')->name('admin.mesa-partes.file');
+
+// Statistics of the public site (resources/js/analytics.js): a page opened, then the time spent on it, downloads and links followed.
+Route::post('/estadisticas/visita', [AnalyticsController::class, 'store'])->middleware('throttle:analytics')->name('analytics.store');
+Route::post('/estadisticas/visita/{pageView}', [AnalyticsController::class, 'update'])->middleware(['signed:relative', 'throttle:analytics'])->name('analytics.update');
+
+// The announcement window reports what visitors did with it (resources/js/announcements.js).
+Route::post('/anuncios/{announcement}/registro', AnnouncementTrackingController::class)->middleware('throttle:announcements')->name('announcements.track');
 
 Route::get('/buscar', SearchController::class)->name('search');
 Route::get('/p/{page:slug}', PageController::class)->name('pages.show');

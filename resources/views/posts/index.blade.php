@@ -1,5 +1,6 @@
 <x-layouts.app title="Noticias" :description="'Noticias, comunicados, campañas y ferias de la '.\App\Models\Setting::valueOf('site_name', config('app.name')).'.'">
     <x-page-header title="Noticias" subtitle="Actividades, campañas, ferias y comunicados de la Dirección Regional." :breadcrumbs="['Noticias' => null]" />
+    <x-analytics-search :term="$term" :results="$posts->total()" scope="noticias" />
 
     <div class="container-site mt-10">
         <form method="GET" action="{{ route('posts.index') }}" class="card mb-8 flex flex-col gap-3 p-4 sm:flex-row sm:items-center" role="search">

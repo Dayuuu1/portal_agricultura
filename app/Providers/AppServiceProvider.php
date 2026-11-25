@@ -4,16 +4,21 @@ namespace App\Providers;
 
 use App\Models\ActivityLog;
 use App\Models\Agency;
+use App\Models\Document;
 use App\Models\DocumentType;
+use App\Models\JobPosting;
 use App\Models\Link;
 use App\Models\NonWorkingDay;
 use App\Models\OrganizationalUnit;
 use App\Models\Page;
+use App\Models\Post;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\BusinessDays;
 use App\Support\OutgoingMail;
 use App\Support\RichTextAttributeSanitizer;
+use App\Support\Seo\Sitemap;
+use App\Support\SiteAnnouncements;
 use App\Support\SiteNavigation;
 use Closure;
 use Filament\Forms\Components\FileUpload;
@@ -74,6 +79,14 @@ class AppServiceProvider extends ServiceProvider
             $model::deleted(fn () => SiteNavigation::flush());
         }
 
+        View::composer('components.site.announcements', fn (ViewInstance $view) => $view->with(SiteAnnouncements::for(request())));
+
+        // Published content changed: the sitemaps given to Google are rebuilt on their next request.
+        foreach ([Post::class, Document::class, JobPosting::class, Page::class, OrganizationalUnit::class, Agency::class, DocumentType::class] as $model) {
+            $model::saved(fn () => Sitemap::flush());
+            $model::deleted(fn () => Sitemap::flush());
+        }
+
         View::composer('components.site.footer', fn (ViewInstance $view) => $view->with(
             'footerLinks',
             Link::query()->active()->orderBy('sort_order')->get()->groupBy(fn (Link $link): string => $link->group->value),
@@ -128,6 +141,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('mesa-partes-register', $perVisitor(5, 20));
         RateLimiter::for('mesa-partes-login', $perVisitor(10, 100));
         RateLimiter::for('mesa-partes-password', $perVisitor(5, 20));
+        // Several announcements per window, each shown, clicked or closed: generous, but nobody inflates the figures by hand.
+        RateLimiter::for('announcements', $perVisitor(30, 1000));
+        // Every page opened sends two or three reports; a whole office behind one public IP stays well below this.
+        RateLimiter::for('analytics', $perVisitor(240, 20000));
     }
 
     /**

@@ -1,5 +1,10 @@
 @props(['code', 'title', 'message', 'search' => true])
 
+@if ((string) $code === '404')
+    {{-- Lets the portal statistics list the addresses that do not exist (old or mistyped links). --}}
+    <span hidden data-analytics-not-found></span>
+@endif
+
 <section class="relative isolate overflow-hidden">
     <x-site.contours class="contours-animate absolute inset-0 -z-10 size-full text-brand-300/50 mask-radial-from-20% mask-radial-to-75%" />
     <div class="container-site flex flex-col items-center py-20 text-center sm:py-28">

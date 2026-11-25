@@ -1,4 +1,8 @@
-<x-layouts.app title="Buscar" description="Buscador del portal: noticias, documentos, convocatorias y páginas.">
+{{-- Internal search results are not indexed (Google asks for it); the links they lead to are. --}}
+<x-layouts.app title="Buscar" description="Buscador del portal: noticias, documentos, convocatorias y páginas." robots="noindex, follow">
+    @if ($results !== null)
+        <x-analytics-search :term="$term" :results="$total" scope="portal" />
+    @endif
     <x-page-header title="Buscar en el portal" :breadcrumbs="['Buscar' => null]">
         <form method="GET" action="{{ route('search') }}" class="mt-6 flex max-w-2xl gap-2" role="search">
             <label for="q" class="sr-only">Término de búsqueda</label>

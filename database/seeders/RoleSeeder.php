@@ -25,8 +25,8 @@ class RoleSeeder extends Seeder
             ->all();
 
         $roles = [
-            ['Editor de contenidos', 'Imagen institucional: publica noticias, páginas y banners de la portada.', [
-                'noticias' => self::ALL, 'categorias' => self::CRUD, 'paginas' => self::ALL, 'banners' => self::CRUD, 'enlaces' => self::CRUD,
+            ['Editor de contenidos', 'Imagen institucional: publica noticias, páginas, banners y anuncios de la portada.', [
+                'noticias' => self::ALL, 'categorias' => self::CRUD, 'paginas' => self::ALL, 'banners' => self::CRUD, 'anuncios' => self::CRUD, 'enlaces' => self::CRUD, 'estadisticas' => ['view'],
             ], null],
             ['Redactor de noticias', 'Redacta notas de prensa como borrador; un editor las revisa y publica.', [
                 'noticias' => ['view', 'create', 'update'], 'categorias' => ['view'],

@@ -294,6 +294,19 @@
         @apply text-base;
     }
 
+    /*
+     * Ventana de anuncios (components/site/announcements.blade.php). Es un <dialog> nativo: se dibuja por encima
+     * de todo y deja el resto inerte. Mientras está abierta, la página de fondo no se desplaza.
+     */
+    .announcement-dialog::backdrop {
+        background-color: rgb(8 36 23 / 0.72);
+        backdrop-filter: blur(4px);
+    }
+
+    html:has(.announcement-dialog[open]) {
+        overflow: hidden;
+    }
+
     /* Carrusel de enlaces de interés (components/link-carousel.blade.php). */
     .link-carousel-viewport {
         /* «relative»: los textos sr-only (posición absoluta) también quedan recortados y no ensanchan la página. */
@@ -730,6 +743,48 @@
         animation-duration: 0.28s;
     }
 
+    /*
+     * Ventana de anuncios: sube suavemente mientras el fondo se oscurece, y se desvanece al cerrar.
+     * Los navegadores sin @starting-style la muestran sin animación.
+     */
+    .announcement-dialog {
+        opacity: 0;
+        transform: translateY(1rem) scale(0.98);
+        transition:
+            opacity 0.3s ease-out,
+            transform 0.5s var(--ease-out-quint),
+            overlay 0.3s ease-out allow-discrete,
+            display 0.3s ease-out allow-discrete;
+    }
+
+    .announcement-dialog[open] {
+        opacity: 1;
+        transform: none;
+    }
+
+    .announcement-dialog::backdrop {
+        opacity: 0;
+        transition:
+            opacity 0.4s ease-out,
+            overlay 0.4s ease-out allow-discrete,
+            display 0.4s ease-out allow-discrete;
+    }
+
+    .announcement-dialog[open]::backdrop {
+        opacity: 1;
+    }
+
+    @starting-style {
+        .announcement-dialog[open] {
+            opacity: 0;
+            transform: translateY(1.5rem) scale(0.97);
+        }
+
+        .announcement-dialog[open]::backdrop {
+            opacity: 0;
+        }
+    }
+
     /* Acercamiento lento de la foto de fondo del banner. */
     .hero-background {
         animation: hero-background-zoom 9s ease-out both;
@@ -785,4 +840,9 @@ html.a11y-no-motion [data-reveal] {
 
 html.a11y-no-motion .status-dot::after {
     display: none;
+}
+
+/* «*» no alcanza al ::backdrop, así que la regla general de «Detener animaciones» no lo detiene. */
+html.a11y-no-motion .announcement-dialog::backdrop {
+    transition: none !important;
 }

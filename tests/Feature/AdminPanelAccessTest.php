@@ -29,6 +29,8 @@ class AdminPanelAccessTest extends TestCase
             'categorías' => ['/admin/categorias'],
             'páginas' => ['/admin/paginas'],
             'banners' => ['/admin/banners'],
+            'anuncios' => ['/admin/anuncios'],
+            'nuevo anuncio' => ['/admin/anuncios/create'],
             'documentos' => ['/admin/documentos'],
             'nuevo documento' => ['/admin/documentos/create'],
             'tipos de documento' => ['/admin/tipos-de-documento'],

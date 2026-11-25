@@ -28,6 +28,7 @@
     :description="$activeType?->description ?: ($isAgrarian ? 'Reportes estadísticos agrarios de Madre de Dios.' : 'Resoluciones, documentos de gestión, planeamiento, CMN, boletines y demás documentos públicos.')">
     <x-page-header :title="$heading" :breadcrumbs="$breadcrumbs"
         :subtitle="$activeType?->description ?: ($isAgrarian ? 'Busque y descargue los reportes estadísticos publicados por la Dirección Regional.' : 'Busque y descargue resoluciones, documentos de gestión, planes e informes publicados por la entidad.')" />
+    <x-analytics-search :term="$filters['term']" :results="$documents?->total() ?? 0" scope="documentos" />
 
     <div class="container-site mt-10 grid grid-cols-1 gap-8 lg:grid-cols-4">
         {{-- Filtros --}}

@@ -1,4 +1,5 @@
-<x-layouts.app :title="$post->title" :description="$post->summary" :image="$post->cover_url">
+<x-layouts.app :title="$post->title" :description="$post->summary" :image="$post->cover_url" type="article" :published-at="$post->published_at"
+    :schema="\App\Support\Seo\StructuredData::newsArticle($post)">
     <div class="reading-progress fixed inset-x-0 top-0 z-50 h-1 bg-gold-400" aria-hidden="true"></div>
 
     <x-page-header :title="$post->title" :breadcrumbs="['Noticias' => route('posts.index'), \Illuminate\Support\Str::limit($post->title, 40) => null]">

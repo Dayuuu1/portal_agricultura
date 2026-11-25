@@ -32,6 +32,11 @@ class SecurityHeaders
             $headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';
         }
 
+        // The panel (its sign-in page included) and the reports it exports never belong in search results.
+        if ($request->is('admin', 'admin/*', 'livewire/*')) {
+            $headers['X-Robots-Tag'] = 'noindex, nofollow';
+        }
+
         foreach ($headers as $name => $value) {
             if (! $response->headers->has($name)) {
                 $response->headers->set($name, $value);

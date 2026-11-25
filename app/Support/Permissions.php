@@ -38,6 +38,7 @@ final class Permissions
         'categorias' => ['label' => 'Categorías de noticias', 'group' => 'Contenido', 'description' => 'Clasificación de las noticias.', 'actions' => self::CRUD],
         'paginas' => ['label' => 'Páginas', 'group' => 'Contenido', 'description' => 'Páginas institucionales de contenido libre.', 'actions' => self::CRUD_PUBLISH],
         'banners' => ['label' => 'Banners de portada', 'group' => 'Contenido', 'description' => 'Carrusel de la página de inicio.', 'actions' => self::CRUD],
+        'anuncios' => ['label' => 'Anuncios', 'group' => 'Contenido', 'description' => 'Ventana que aparece al ingresar al portal: comunicados, eventos, afiches o noticias destacadas.', 'actions' => self::CRUD],
         'documentos' => ['label' => 'Documentos', 'group' => 'Documentos', 'description' => 'Resoluciones, documentos de gestión y estadística. Puede limitarse a ciertos tipos de documento.', 'actions' => self::CRUD_PUBLISH],
         'tipos_documento' => ['label' => 'Tipos de documento', 'group' => 'Documentos', 'description' => 'Categorías de documentos y su sección en el portal.', 'actions' => self::CRUD],
         'mesa_partes' => ['label' => 'Mesa de partes: expedientes', 'group' => 'Mesa de partes', 'description' => 'Documentos recibidos por la Mesa de Partes Virtual y sus administrados. «Editar» permite observar, derivar, responder, archivar y suspender cuentas.', 'actions' => [self::VIEW, self::UPDATE]],
@@ -50,6 +51,7 @@ final class Permissions
         'reclamaciones' => ['label' => 'Libro de reclamaciones', 'group' => 'Atención al ciudadano', 'description' => 'Reclamos de la ciudadanía (DS N° 007-2020-PCM). «Editar» permite cambiar el estado y registrar la respuesta. Los reclamos no se pueden eliminar.', 'actions' => [self::VIEW, self::UPDATE]],
         'datos_portal' => ['label' => 'Datos del portal', 'group' => 'Configuración', 'description' => 'Nombre, contacto, redes y enlaces a servicios.', 'actions' => [self::VIEW, self::UPDATE]],
         'usuarios' => ['label' => 'Usuarios', 'group' => 'Configuración', 'description' => 'Crear cuentas y asignar roles. Nunca permite crear administradores ni dar permisos que la persona no tenga.', 'actions' => self::CRUD],
+        'estadisticas' => ['label' => 'Estadísticas del portal', 'group' => 'Configuración', 'description' => 'Visitantes, tiempo de visita, origen del tráfico, búsquedas y descargas del portal público. Solo lectura y sin datos personales.', 'actions' => [self::VIEW]],
         'actividad' => ['label' => 'Registro de actividad', 'group' => 'Configuración', 'description' => 'Historial de cambios e inicios de sesión.', 'actions' => [self::VIEW]],
         'redirecciones' => ['label' => 'Redirecciones', 'group' => 'Configuración', 'description' => 'Direcciones del portal anterior.', 'actions' => self::CRUD],
     ];

@@ -33,6 +33,8 @@ class SettingSeeder extends Seeder
             ['servicios', 'complaints_email', 'Correo que recibe el Libro de Reclamaciones', 'email', 'info@dramdd.gob.pe'],
             ['servicios', 'transparencia_url', 'Portal de Transparencia Estándar (PTE)', 'url', null],
             ['servicios', 'sigaweb_url', 'SIGAWEB (sistema interno)', 'url', 'http://200.37.143.226:8000/SIGAWEB/'],
+            ['buscadores', 'google_site_verification', 'Código de verificación de Google Search Console', 'text', null],
+            ['buscadores', 'bing_site_verification', 'Código de verificación de Bing Webmaster Tools', 'text', null],
         ];
 
         foreach ($settings as $order => [$group, $key, $label, $type, $value]) {

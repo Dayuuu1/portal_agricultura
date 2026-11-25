@@ -1,5 +1,10 @@
 @props(['title', 'subtitle' => null, 'breadcrumbs' => []])
 
+@if ($breadcrumbs !== [])
+    {{-- The same breadcrumb for Google, which shows it in the results instead of the bare address. --}}
+    <x-structured-data :data="\App\Support\Seo\StructuredData::breadcrumbs($breadcrumbs)" />
+@endif
+
 <section class="relative isolate overflow-hidden bg-brand-900 text-white">
     <div class="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_at_85%_0%,var(--color-brand-700),transparent_65%)]" aria-hidden="true"></div>
     <x-site.contours class="contours-animate absolute inset-y-0 right-0 -z-10 h-full w-full text-brand-300/30 mask-l-from-40% mask-l-to-95% lg:w-3/4" />
